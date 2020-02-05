@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="baidu-site-verification" content="093lY4ziMu" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="description" content="记录生活，记录知识">
+    <meta name="keyword"  content="javascript, frontEnd">
+    <link rel="shortcut icon" href="/img/header.jpg ">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!--<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>-->
+    <title>
+        
+          verdaccio搭建私有npm仓库，缓存npm公共包 - xiaopf
+        
+    </title>
+
+    <link rel="canonical" href="https://xiaopf.github.io/2019/12/06/verdaccio-build-npm-repository/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/xiaopf.css">
+    <!-- background effects end -->
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/fonts.googleapis.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <!--<link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+
+    <link rel="stylesheet" href="/css/font-awesome.css">
+
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    
+        <!-- background effects start -->
+        <!-- show star -->
+        <canvas id="canv" width="1440" height="768"></canvas>
+<script>
+  var num = 200;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  var max = 100;
+  var _x = 0;
+  var _y = 0;
+  var _z = 150;
+  var dtr = function(d) {
+    return d * Math.PI / 180;
+  };
+
+  var rnd = function() {
+    return Math.sin(Math.floor(Math.random() * 360) * Math.PI / 180);
+  };
+  var dist = function(p1, p2, p3) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) + Math.pow(p2.z - p1.z, 2));
+  };
+
+  var cam = {
+    obj: {
+      x: _x,
+      y: _y,
+      z: _z
+    },
+    dest: {
+      x: 0,
+      y: 0,
+      z: 1
+    },
+    dist: {
+      x: 0,
+      y: 0,
+      z: 200
+    },
+    ang: {
+      cplane: 0,
+      splane: 0,
+      ctheta: 0,
+      stheta: 0
+    },
+    zoom: 1,
+    disp: {
+      x: w / 2,
+      y: h / 2,
+      z: 0
+    },
+    upd: function() {
+      cam.dist.x = cam.dest.x - cam.obj.x;
+      cam.dist.y = cam.dest.y - cam.obj.y;
+      cam.dist.z = cam.dest.z - cam.obj.z;
+      cam.ang.cplane = -cam.dist.z / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.splane = cam.dist.x / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.ctheta = Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z) / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+      cam.ang.stheta = -cam.dist.y / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+    }
+  };
+
+  var trans = {
+    parts: {
+      sz: function(p, sz) {
+        return {
+          x: p.x * sz.x,
+          y: p.y * sz.y,
+          z: p.z * sz.z
+        };
+      },
+      rot: {
+        x: function(p, rot) {
+          return {
+            x: p.x,
+            y: p.y * Math.cos(dtr(rot.x)) - p.z * Math.sin(dtr(rot.x)),
+            z: p.y * Math.sin(dtr(rot.x)) + p.z * Math.cos(dtr(rot.x))
+          };
+        },
+        y: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.y)) + p.z * Math.sin(dtr(rot.y)),
+            y: p.y,
+            z: -p.x * Math.sin(dtr(rot.y)) + p.z * Math.cos(dtr(rot.y))
+          };
+        },
+        z: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.z)) - p.y * Math.sin(dtr(rot.z)),
+            y: p.x * Math.sin(dtr(rot.z)) + p.y * Math.cos(dtr(rot.z)),
+            z: p.z
+          };
+        }
+      },
+      pos: function(p, pos) {
+        return {
+          x: p.x + pos.x,
+          y: p.y + pos.y,
+          z: p.z + pos.z
+        };
+      }
+    },
+    pov: {
+      plane: function(p) {
+        return {
+          x: p.x * cam.ang.cplane + p.z * cam.ang.splane,
+          y: p.y,
+          z: p.x * -cam.ang.splane + p.z * cam.ang.cplane
+        };
+      },
+      theta: function(p) {
+        return {
+          x: p.x,
+          y: p.y * cam.ang.ctheta - p.z * cam.ang.stheta,
+          z: p.y * cam.ang.stheta + p.z * cam.ang.ctheta
+        };
+      },
+      set: function(p) {
+        return {
+          x: p.x - cam.obj.x,
+          y: p.y - cam.obj.y,
+          z: p.z - cam.obj.z
+        };
+      }
+    },
+    persp: function(p) {
+      return {
+        x: p.x * cam.dist.z / p.z * cam.zoom,
+        y: p.y * cam.dist.z / p.z * cam.zoom,
+        z: p.z * cam.zoom,
+        p: cam.dist.z / p.z
+      };
+    },
+    disp: function(p, disp) {
+      return {
+        x: p.x + disp.x,
+        y: -p.y + disp.y,
+        z: p.z + disp.z,
+        p: p.p
+      };
+    },
+    steps: function(_obj_, sz, rot, pos, disp) {
+      var _args = trans.parts.sz(_obj_, sz);
+      _args = trans.parts.rot.x(_args, rot);
+      _args = trans.parts.rot.y(_args, rot);
+      _args = trans.parts.rot.z(_args, rot);
+      _args = trans.parts.pos(_args, pos);
+      _args = trans.pov.plane(_args);
+      _args = trans.pov.theta(_args);
+      _args = trans.pov.set(_args);
+      _args = trans.persp(_args);
+      _args = trans.disp(_args, disp);
+      return _args;
+    }
+  };
+  const canvasObj = document.getElementById("canv");
+  (function() {
+    "use strict";
+    // 移动端不开启悬浮的星星
+    const UA = window.navigator.userAgent;
+    if(UA.indexOf('Android') >= 0 || UA.indexOf('iPhone') >= 0){
+        return false;
+    }
+    // 控制star显示隐藏
+    const mode = window.localStorage.getItem('mode');
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      canvasObj.style.display = "none";
+      document.body.style.backgroundColor = "transparent";
+      return false;
+    } else {
+      canvasObj.style.display = "block";
+      document.body.className = "stars"
+      document.body.style.backgroundColor = "rgba(26,26,26,1)";
+      document.body.style.color = "#fff";
+      setTimeout(() => {
+        const gitmentContainer = document.getElementsByClassName("gitment-container");
+        const gitmentEditorPreview = document.getElementsByClassName("gitment-editor-preview");
+        const gitmentHeartIcon = document.getElementsByClassName("gitment-heart-icon");
+        if(gitmentContainer.length > 0 && gitmentEditorPreview.length > 0 && gitmentHeartIcon.length > 0) {
+            gitmentContainer[0].style.color = "#fff";
+            gitmentContainer[1].style.color = "#fff";
+            gitmentEditorPreview[0].style.backgroundColor = "#fff";
+            gitmentHeartIcon[0].style.fill = "#fff";
+        }
+      }, 2000);
+    }
+
+    var threeD = function(param) {
+      this.transIn = {};
+      this.transOut = {};
+      this.transIn.vtx = (param.vtx);
+      this.transIn.sz = (param.sz);
+      this.transIn.rot = (param.rot);
+      this.transIn.pos = (param.pos);
+    };
+
+    threeD.prototype.vupd = function() {
+      this.transOut = trans.steps(
+
+        this.transIn.vtx,
+        this.transIn.sz,
+        this.transIn.rot,
+        this.transIn.pos,
+        cam.disp
+      );
+    };
+
+    var Build = function() {
+      this.vel = 0.04;
+      this.lim = 360;
+      this.diff = 200;
+      this.initPos = 100;
+      this.toX = _x;
+      this.toY = _y;
+      this.go();
+    };
+
+    Build.prototype.go = function() {
+      this.canvas = document.getElementById("canv");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+      this.$ = canv.getContext("2d");
+      this.$.globalCompositeOperation = 'source-over';
+      this.varr = [];
+      this.dist = [];
+      this.calc = [];
+
+      for (var i = 0, len = num; i < len; i++) {
+        this.add();
+      }
+
+      this.rotObj = {
+        x: 0,
+        y: 0,
+        z: 0
+      };
+      this.objSz = {
+        x: w / 5,
+        y: h / 5,
+        z: w / 5
+      };
+    };
+
+    Build.prototype.add = function() {
+      this.varr.push(new threeD({
+        vtx: {
+          x: rnd(),
+          y: rnd(),
+          z: rnd()
+        },
+        sz: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+        rot: {
+          x: 20,
+          y: -20,
+          z: 0
+        },
+        pos: {
+          x: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          y: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          z: this.diff * Math.sin(360 * Math.random() * Math.PI / 180)
+        }
+      }));
+      this.calc.push({
+        x: 360 * Math.random(),
+        y: 360 * Math.random(),
+        z: 360 * Math.random()
+      });
+    };
+
+    Build.prototype.upd = function() {
+      cam.obj.x += (this.toX - cam.obj.x) * 0.05;
+      cam.obj.y += (this.toY - cam.obj.y) * 0.05;
+    };
+
+    Build.prototype.draw = function() {
+      this.$.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      cam.upd();
+      this.rotObj.x += 0.1;
+      this.rotObj.y += 0.1;
+      this.rotObj.z += 0.1;
+
+      for (var i = 0; i < this.varr.length; i++) {
+        for (var val in this.calc[i]) {
+          if (this.calc[i].hasOwnProperty(val)) {
+            this.calc[i][val] += this.vel;
+            if (this.calc[i][val] > this.lim) this.calc[i][val] = 0;
+          }
+        }
+
+        this.varr[i].transIn.pos = {
+          x: this.diff * Math.cos(this.calc[i].x * Math.PI / 180),
+          y: this.diff * Math.sin(this.calc[i].y * Math.PI / 180),
+          z: this.diff * Math.sin(this.calc[i].z * Math.PI / 180)
+        };
+        this.varr[i].transIn.rot = this.rotObj;
+        this.varr[i].transIn.sz = this.objSz;
+        this.varr[i].vupd();
+        if (this.varr[i].transOut.p < 0) continue;
+        var g = this.$.createRadialGradient(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p, this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2);
+        this.$.globalCompositeOperation = 'lighter';
+        g.addColorStop(0, 'hsla(255, 255%, 255%, 1)');
+        g.addColorStop(.5, 'hsla(' + (i + 2) + ',85%, 40%,1)');
+        g.addColorStop(1, 'hsla(' + (i) + ',85%, 40%,.5)');
+        this.$.fillStyle = g;
+        this.$.beginPath();
+        this.$.arc(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2, 0, Math.PI * 2, false);
+        this.$.fill();
+        this.$.closePath();
+      }
+    };
+    Build.prototype.anim = function() {
+      window.requestAnimationFrame = (function() {
+        return window.requestAnimationFrame ||
+          function(callback, element) {
+            window.setTimeout(callback, 1000 / 60);
+          };
+      })();
+      var anim = function() {
+        this.upd();
+        this.draw();
+        window.requestAnimationFrame(anim);
+      }.bind(this);
+      window.requestAnimationFrame(anim);
+    };
+
+    Build.prototype.run = function() {
+      this.anim();
+
+      window.addEventListener('mousemove', function(e) {
+        this.toX = (e.clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        this.toX = (e.touches[0].clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.touches[0].clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('mousedown', function(e) {
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+      window.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+    };
+    var app = new Build();
+    app.run();
+  })();
+  
+  window.addEventListener('resize', function() {
+    canvasObj.width = w = window.innerWidth;
+    canvasObj.height = h = window.innerHeight;
+  }, false);
+  
+</script>
+
+<style  type="text/css">
+  body{
+    text-align: -webkit-auto;
+  }
+  .stars div,.stars p,.stars ul,.stars li{
+    color: #fff;
+    filter:alpha(Opacity=90);
+    -moz-opacity:0.98;
+    opacity: 0.98; 
+  }
+  body hr{
+    background-color: rgba(255,255,255,0.4);
+    height: 1px;
+    border: none;
+  }
+  #cnblogs_post_body p img{
+    max-width: 100%;
+  }
+  #container {
+    width: 90%;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+  }
+  #canv{
+    position: fixed;
+    display: none;
+  }
+  .cnblogs_code {
+    color: #f8f8f8;
+    background-color: rgba(245, 245, 245, 0);
+    border: 1px solid #cccccc6e;
+  }
+  .cnblogs_code span{
+    color: #ccc!important;
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code div {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  .cnblogs_code_toolbar a:link{
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code_toolbar a:link img{
+    background-color:#f5f5f500!important;
+  }
+  div.commentform textarea.comment_textarea {
+    background-color: #f0f8ff00;
+  }
+</style>
+        <!-- background effects end -->
+    
+
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('defaultHeaderBg.jpg')
+            /*post*/
+        
+    }
+    
+    #signature{
+        background-image: url('/img/signature/Just-do-it-white.png');
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#verdaccio" title="verdaccio">verdaccio</a>
+                            
+                              <a class="tag" href="/tags/#npm" title="npm">npm</a>
+                            
+                        </div>
+                        <h1>verdaccio搭建私有npm仓库，缓存npm公共包</h1>
+                        <h2 class="subheading">npm私有仓库</h2>
+                        <span class="meta">
+                            Posted by xiaopf on
+                            2019-12-06
+                        </span>
+
+                        
+                            <div class="blank_box"></div>
+                            <span class="meta">
+                                Words <span class="post-count">1.8k</span> and
+                                Reading Time <span class="post-count">6</span> Minutes
+                            </span>
+                            <div class="blank_box"></div>
+                            <!-- 不蒜子统计 start -->
+                            <span class="meta">
+                                Viewed <span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span> Times
+                            </span>
+                            <!-- 不蒜子统计 end -->
+                        
+
+                    </div>
+                
+
+                </div>
+            </div>
+        </div>      
+    </div>
+    <div class="waveWrapper">
+        <div class="wave wave_before" style="background-image: url('/img/wave-top80.png')"></div>
+        <div class="wave wave_after" style="background-image: url('/img/wave-top80.png')"></div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">xiaopf&#39;s site</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    <li style="cursor: pointer;">
+                        <p id="changeMode" class="change-mode" title="change mode">
+                            Mode
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    const $body   = document.body;
+    const $toggle = document.querySelector('.navbar-toggle');
+    const $navbar = document.querySelector('#huxblog_navbar');
+    const $collapse = document.querySelector('.navbar-collapse');
+    const $changeMode = document.querySelector('#changeMode');
+    const mode = window.localStorage.getItem('mode');
+    $changeMode.addEventListener('click', handleChangeMode)
+    $toggle.addEventListener('click', handleMagic)
+    
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      $changeMode.innerHTML='STAR'
+    } else {
+      $changeMode.innerHTML='LIGHT'
+    }
+    
+    function handleChangeMode(e){
+        if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+            window.localStorage.setItem('mode','star');
+        }else{
+            window.localStorage.setItem('mode','light');
+        }
+        window.location.reload()
+    }
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="verdaccio搭建私有npm仓库，缓存npm公共包"><a href="#verdaccio搭建私有npm仓库，缓存npm公共包" class="headerlink" title="verdaccio搭建私有npm仓库，缓存npm公共包"></a>verdaccio搭建私有npm仓库，缓存npm公共包</h2><h3 id="私有npm仓库的特点："><a href="#私有npm仓库的特点：" class="headerlink" title="私有npm仓库的特点："></a>私有npm仓库的特点：</h3><ul>
+<li>私有npm仓库可以搭建在局域网内，不对外开放</li>
+<li>对于发布和下载npm包可以配置权限管理</li>
+<li>私有npm仓库可以管理私有包，不用上传到公共npm仓库的包</li>
+<li>缓存下载过得npm包文件，再次下载可以大大加快下载速度</li>
+<li>对于私有包走私有仓库，对于下载过的包走缓存，对于未下载过的包走公共仓库</li>
+</ul>
+<h3 id="verdaccio-是什么"><a href="#verdaccio-是什么" class="headerlink" title="verdaccio 是什么"></a>verdaccio 是什么</h3><p>官网给出的简介 ： Verdaccio 是一个 Node.js创建的轻量的私有npm proxy registry</p>
+<p>verdaccio是fork的<a href="https://github.com/rlidwka/sinopia" target="_blank" rel="noopener">sinopia</a>，后者是最初的搭建私有npm的选择，不过已经好多年不维护了，而verdaccio则是从sinopia衍生出来并且一直在维护中的，所以verdaccio是更好的选择。</p>
+<ul>
+<li>它是基于Node.js的网页应用程序</li>
+<li>它是私有npm registry</li>
+<li>它是本地网络proxy</li>
+<li>它是可插入式应用程序</li>
+<li>它相当容易安装和使用</li>
+<li>我们提供Docker和Kubernetes支持</li>
+<li>它与yarn, npm 和pnpm 100% 兼容</li>
+<li>它forked于sinopia@1.4.0并且100% 向后兼容。</li>
+<li>Verdaccio 表示意大利中世纪晚期fresco 绘画中流行的一种绿色的意思。</li>
+</ul>
+<h3 id="verdaccio-搭建"><a href="#verdaccio-搭建" class="headerlink" title="verdaccio 搭建"></a>verdaccio 搭建</h3><h4 id="全局安装-verdaccio"><a href="#全局安装-verdaccio" class="headerlink" title="全局安装 verdaccio"></a>全局安装 verdaccio</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">npm <span class="keyword">install</span> -g verdaccio <span class="comment">--unsafe-perm</span></span></pre></td></tr></table></figure>
+<p>加上—unsafe-perm选项是为了防止gyp ERR! permission denied权限问题报错，报错如下：</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/B7740D2419AA4F07864FA8BFBE4E121A?method=download&amp;shareKey=8f409f0b542e79fbc1c522e9e41d701d" alt="image"></p>
+<p>加上—unsafe-perm之后安装</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/7E0D796DB5DA4980A0D801A0821143C3?method=download&amp;shareKey=91bd26ce0b39374bb9c946eca562d3a8" alt="image"></p>
+<h4 id="启动-verdaccio"><a href="#启动-verdaccio" class="headerlink" title="启动 verdaccio"></a>启动 verdaccio</h4><p>安装完成后直接在命令行中输入verdaccio启动,<br><figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attribute">verdaccio</span></span></pre></td></tr></table></figure><br>会输出如下结果</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/333CCAB2020043C1A129BC79D3303ECD?method=download&amp;shareKey=49b3fa0d059c1609a530272a74bce3ec" alt="image"></p>
+<p>其中第一行就是verdaccio的配置文件目录，相关的配置都在config.yaml中去进行配置，<a href="https://verdaccio.org/docs/zh-CN/configuration" target="_blank" rel="noopener">详细的verdaccio配置文件文档</a></p>
+<figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">C:<span class="symbol">\U</span>sers<span class="symbol">\x</span>iaopengfei<span class="symbol">\.</span>config<span class="symbol">\v</span>erdaccio<span class="symbol">\c</span>onfig.yaml</span></pre></td></tr></table></figure>
+<p>进入这个目录中打开着个配置文件在最下面添加下面监听端口，这个在服务器上启动很重要，否则服务器外网ip加端口是无法访问仓库的。</p>
+<figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">listen: <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>:<span class="number">4873</span></span></pre></td></tr></table></figure>
+<p>C:\Users\xiaopengfei.config\verdaccio 这个地址下面不仅有config.yaml,还有一个==storage==文件夹，这个文件夹就是用来存放私有包及缓存公有包的仓库。</p>
+<p>第四行的地址也就是verdaccio私有仓库的前端页面，由于是在本地启动的，所以是localhost，如果是服务上安装，对应服务器ip地址即可。</p>
+<p>在浏览器中输入地址 <a href="http://localhost:4873/" target="_blank" rel="noopener">http://localhost:4873/</a> ，即可看到</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/0B257F2AC50E49728F5EDB5AF22AADF9?method=download&amp;shareKey=fb9002c481a9205f75e55de2dc87ce62" alt="image"></p>
+<h4 id="登录到私有仓库上"><a href="#登录到私有仓库上" class="headerlink" title="登录到私有仓库上"></a>登录到私有仓库上</h4><p>首先在命令行中输入下面添加用户的命令</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">npm adduser --registry <span class="string">http:</span><span class="comment">//localhost:4873</span></span></pre></td></tr></table></figure>
+<p><img src="https://note.youdao.com/yws/api/personal/file/F0C50B21337F4BF7B5A528F96FA9E3A1?method=download&amp;shareKey=44c2aa9b081a88372700c4bf414f041d" alt="image"></p>
+<p>然后回到浏览器中点击 login 按钮进行登录</p>
+<h4 id="发布-npm-包到私有仓库"><a href="#发布-npm-包到私有仓库" class="headerlink" title="发布 npm 包到私有仓库"></a>发布 npm 包到私有仓库</h4><p>具体怎么制作npm包，不作讲解，一般的包文件包含以下文件</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/FE61BF6195744A9890197725C03406BD?method=download&amp;shareKey=926fb04ebdd189af9d5d29fb738a3ef5" alt="image"></p>
+<p>发布包文件到私有仓库命令如下(需要到包文件下面去执行命令)<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">npm publish --registry <span class="string">http:</span><span class="comment">//localhost:4873</span></span></pre></td></tr></table></figure></p>
+<p>如果我们用一个npm公有包去上传的话会报错如下</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/3502C4E03C0F4F5E895CA31890021610?method=download&amp;shareKey=25e8c6616af3cf3f9336964b51d8242d" alt="image"></p>
+<p>为了测试我们可以把上面的包进行改造文件夹改个名字fakeAxios，再把package.json里面的所有axios改成fakeAxios，然后在去fakeAxios文件夹下执行上面的命令，就可以将包发布到私有仓库了，成功后界面上会显示包的信息，如下图，说明上传成功了。</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/D48A9348827D485CB594655D039937B4?method=download&amp;shareKey=474e989a8e2f7dd72f26d28bed5ec351" alt="image"></p>
+<h4 id="从私有仓库中下载私有包"><a href="#从私有仓库中下载私有包" class="headerlink" title="从私有仓库中下载私有包"></a>从私有仓库中下载私有包</h4><h5 id="全局安装-nrm"><a href="#全局安装-nrm" class="headerlink" title="全局安装 nrm"></a>全局安装 nrm</h5><p>nrm是 npm registry 管理工具, 能够查看和切换当前使用的registry。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">npm <span class="keyword">install</span> -g nrm</span></pre></td></tr></table></figure>
+<p>将私有仓库的地址添加到nrm管理工具中,add后面跟的是个自己起的名字</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">nrm <span class="keyword">add</span> xiao http:<span class="comment">//localhost:4873</span></span></pre></td></tr></table></figure>
+<p>成功后会提示  add registry xiao success</p>
+<p>使用nrm ls可查到我们可以使用的所有镜像源地址，*是正在使用的，也就是首选项</p>
+<figure class="highlight ebnf"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attribute">nrm ls</span></span></pre></td></tr></table></figure>
+<p><img src="https://note.youdao.com/yws/api/personal/file/013859D38745446295BAE43F481BB6E5?method=download&amp;shareKey=de09ef6848d61b4cac3c5c6397f1d2a0" alt="image"></p>
+<p>切换首选项为私有仓库的源，以后下载包的时候就会先走私有仓库，如果没有再走其他的地址去下载。</p>
+<figure class="highlight actionscript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">nrm <span class="keyword">use</span> xiao <span class="comment">//名字是上面起的那个</span></span></pre></td></tr></table></figure>
+<p>以上操作完之后，以后 npm install 或者 yarn add 就可以下载私有包了。</p>
+<h4 id="缓存-npm-公共包"><a href="#缓存-npm-公共包" class="headerlink" title="缓存 npm 公共包"></a>缓存 npm 公共包</h4><p>配置好私有仓库之后，每次我们下载公共包的时候，会自动把包文件缓存在<br><figure class="highlight taggerscript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">C:<span class="symbol">\U</span>sers<span class="symbol">\x</span>iaopengfei<span class="symbol">\.</span>config<span class="symbol">\v</span>erdaccio<span class="symbol">\s</span>torage</span></pre></td></tr></table></figure><br>私有包也是会存在storage这个文件夹下面的，当公共包被缓存之后，再次下载的时候，会首先在这个仓库中获取，大大的加速了包文件的下载速度，但是verdaccio官网上面显示缓存的过期时间默认是2分钟，如果想避免缓存的话可以在config.yml中设置 cache：false<br><figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attribute">uplinks</span>:</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  <span class="attribute">npmjs</span>:</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="attribute">url</span>: <span class="attribute">https</span>:<span class="comment">//registry.npmjs.org/</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="attribute">cache</span>: false</span></pre></td></tr></table></figure><br>延长缓存过期时间,增加maxage,如果不经常更新依赖，这是一个有效的策略</p>
+<p>注意 maxage 的缩进，缩进有问题的话，用verdaccio启动会报错！</p>
+<figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attribute">uplinks</span>:</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  <span class="attribute">npmjs</span>:</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="attribute">url</span>: <span class="attribute">https</span>:<span class="comment">//registry.npmjs.org/</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="attribute">maxage</span>: <span class="number">30</span>m</span></pre></td></tr></table></figure>
+<p>下面测试一下安装webpack的个包。</p>
+<p>首先直接下载webpack耗费时间如下</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/54FF562EE980492194EAEC46958D8A01?method=download&amp;shareKey=4f00d6dd4c736a75f82aaf045513b9fc" alt="image"></p>
+<p>有缓存后的下载，明显快了很多（测试了很多次下载webpack，发现下载速度和硬盘类型也有关，固态硬盘下明显会比机械硬盘快一些）</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/84AB10A71B004286B55F50A8EB01F431?method=download&amp;shareKey=8655864cc15e00dfc9eeefb53a44dbc8" alt="image"></p>
+<p>在我们 npm install 包的时候，verdaccio 开启的服务命令行中，会不停的有 http 请求</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/2376198112D24AA3B3A65C064312A4F3?method=download&amp;shareKey=57cda3a87fa8f3dc7c8371482e7b9ee3" alt="image"></p>
+<h4 id="关于守护进程"><a href="#关于守护进程" class="headerlink" title="关于守护进程"></a>关于守护进程</h4><p>在windows下安装 pm2 守护 verdaccio 的进程，status 一直报错，没有解决掉，后来在阿里云的服务器上安装了 pm2 也遇到了一些问题，不过全都解决掉了。</p>
+<h5 id="全局安装-pm2"><a href="#全局安装-pm2" class="headerlink" title="全局安装 pm2"></a>全局安装 pm2</h5><p>安装完成verdaccio之后，我们需要安装pm2来守护进程，<a href="https://pm2.io/doc/zh/runtime/overview/" target="_blank" rel="noopener">关于pm2详细用法</a></p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">npm <span class="keyword">install</span> -g pm2</span></pre></td></tr></table></figure>
+<p>输入下面命令可以验证是否安装成功（如遇command not found，看后文，遇到的问题）<br><figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">p<span class="name">m2</span> -V</span></pre></td></tr></table></figure></p>
+<h5 id="用-pm2-启动-verdaccio"><a href="#用-pm2-启动-verdaccio" class="headerlink" title="用 pm2 启动 verdaccio"></a>用 pm2 启动 verdaccio</h5><p>先关闭之前直接用 verdaccio 启动的服务，用下面的命令启动<br><figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">pm2 <span class="literal">start</span> verdaccio</span></pre></td></tr></table></figure><br>服务启动后如下图</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/A58FD440519246EB8B3490CAAC1607BF?method=download&amp;shareKey=efe1cfaaa04fee6695d01f6ccc545bb6" alt="image"></p>
+<h5 id="访问私有仓库"><a href="#访问私有仓库" class="headerlink" title="访问私有仓库"></a>访问私有仓库</h5><p>在浏览器中输入 服务器对外ip 加上端口号 4873 访问私有仓库的页面，<br>这里需要注意的是，需要在阿里云上配置4873端口安全组，还有前文说的在config.yml最后添加 listen: 0.0.0.0:4873,否则都无法在浏览器中访问到私有仓库页面</p>
+<h5 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h5><p>1.明明全局安装了 verdaccio 和 pm2 但是在命令行中报错 command not found</p>
+<h6 id="解决："><a href="#解决：" class="headerlink" title="解决："></a>解决：</h6><p>需要把node的安装目录添加到环境变量中，我的是</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">/usr/local/<span class="keyword">node</span><span class="title">/bin</span></span></pre></td></tr></table></figure>
+<p>pm2 和 verdaccio 都是在bin文件夹下面，</p>
+<p>2.用 pm2 start verdaccio 状态（就是status）一直error 或 stopped，有时候可能是 online，但是用 pm2 show 0 看详情的话还是 error，</p>
+<h6 id="解决：-1"><a href="#解决：-1" class="headerlink" title="解决："></a>解决：</h6><p>将启动的verdaccio删除，<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">pm2 <span class="keyword">delete</span> <span class="number">0</span> //这个<span class="number">0</span> 是<span class="keyword">id</span>号，上面的<span class="keyword">show</span>后面的也是<span class="keyword">id</span>号</span></pre></td></tr></table></figure><br>查看pm2进程<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">ps</span> -ux | <span class="keyword">grep</span> pm2</span></pre></td></tr></table></figure><br>杀掉pm2进程<br><figure class="highlight angelscript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">kill <span class="number">-9</span>  xxxx <span class="comment">//xxxx是pm2进程对应的 pid号</span></span></pre></td></tr></table></figure><br>最后在用pm2 start verdaccio 启动进程，再用 pm2 show 0 （id号）查看详情</p>
+<p><img src="https://note.youdao.com/yws/api/personal/file/E561CA455150431DA604B259C59E4899?method=download&amp;shareKey=c70298e6e9a8622213a488c63ccba39c" alt="image"></p>
+<p>在网站中输入地址，即可看到私有仓库页面了，这样进程就可以长时间存在了。</p>
+
+                
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2019/12/12/js-sort/" data-toggle="tooltip" data-placement="top" title="主流排序算法概览">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2019/12/06/hexo-build-github-pages/" data-toggle="tooltip" data-placement="top" title="Hexo快速搭建个人博客，并发布到github pages">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <div class="comment_notes_blank"></div>
+
+                <!-- tip start -->
+                
+                <div class="visitor_notice">
+                    <img 
+                        src="/img/notice.png" 
+                        alt="notice"
+                        title="notice"/>
+                    <p class="notice">
+                        欢迎访问 <a href="https://xiaopf.github.io/" target="xiaopf">xiaopf</a> 的博客, 若有问题或者有好的建议欢迎留言，笔者看到之后会及时回复。 评论点赞需要github账号登录，如果没有账号的话请点击 <a href="https://github.com" target="view_window" > github </a> 注册， 谢谢 !
+                    </p>
+                </div>
+                <div class="comment_notes">
+                    <p>
+                        If you like this blog or find it useful for you, you are welcome to comment on it. 
+                        You are also welcome to share this blog, so that more people can participate in it.
+                        If the images used in the blog infringe your copyright, please contact the author to delete them. Thank you !
+                    </p>
+                </div>
+                
+                <!-- tip end -->
+
+                <!--分享-->
+                
+                <!--分享-->
+
+                <!-- require APlayer start --><!--
+                
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.css">
+                <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/meting@1.2/dist/Meting.min.js"></script>
+
+                <div class="aplayer"
+                    data-id=""
+                    data-server=""
+                    data-type=""
+                    data-fixed="" >
+                </div>
+                -->
+                <!-- require APlayer end -->
+
+                <!-- gitment start -->
+                
+                <hr>
+                <div id="blog_comments"></div>
+
+<!--
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+-->
+<!--
+<link rel="stylesheet" href="/css/gitment.css">
+<script type="text/javascript" src="/js/gitment.js"></script>
+-->
+
+<script src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/gitment.browser.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/default.css"/>
+
+<!--
+<link rel="stylesheet" href="https://billts.site/extra_css/gitment.css">
+<script src="https://billts.site/js/gitment.js"></script>
+-->
+
+<script>
+const myTheme = {
+  render(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'gitment-container gitment-root-container'
+    
+     // your custom component
+    container.appendChild(instance.renderSomething(state, instance))
+    
+    container.appendChild(instance.renderHeader(state, instance))
+    container.appendChild(instance.renderComments(state, instance))
+    container.appendChild(instance.renderEditor(state, instance))
+    //container.appendChild(instance.renderFooter(state, instance))
+    return container
+  },
+  renderSomething(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'hello_visitor'
+    if (state.user.login) {
+      container.innerText = `Hello ${state.user.login}, Welcome to comment system`
+    }
+    return container
+  }
+}
+
+
+const gitment = new Gitment({
+    id: 'Fri Dec 06 2019 15:02:12 GMT+0800', // optional
+    owner: "xiaopf",
+    repo: "xiaopf.github.io",
+    oauth: {
+      client_id: "cdef4a51db6a777a079b",
+      client_secret: "7a1ff9334134ea02a901d0da92e6ee283068d19a",
+    },
+    theme: myTheme,
+    // ...
+    // For more available options, check out the documentation below
+  })
+  
+  gitment.render('blog_comments')
+  // or
+  // gitment.render(document.getElementById('comments'))
+  // or
+  // document.body.appendChild(gitment.render())
+
+  setTimeout(() => {
+      let loginBtn = document.querySelector('.gitment-editor-login-link');
+      if(!loginBtn){
+        return false;
+      }
+      loginBtn.addEventListener('click',(e) => {
+        window.localStorage.setItem('loginAnchor',1)
+      })
+  }, 2000);
+  const loginAnchor = window.localStorage.getItem('loginAnchor')
+  if(loginAnchor === '1'){
+      const container = document.createElement('a');
+      const e = document.createEvent("MouseEvents");   
+      e.initEvent("click", true, true);
+      container.href="#footer";
+      container.dispatchEvent(e);
+      window.localStorage.setItem('loginAnchor',0)
+  }
+</script>
+                
+                <!-- gitment end -->
+
+                <!-- 来必力City版安装代码 -->
+                
+                <!-- City版安装代码已完成 -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#verdaccio搭建私有npm仓库，缓存npm公共包"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">verdaccio搭建私有npm仓库，缓存npm公共包</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#私有npm仓库的特点："><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">私有npm仓库的特点：</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#verdaccio-是什么"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">verdaccio 是什么</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#verdaccio-搭建"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">verdaccio 搭建</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#全局安装-verdaccio"><span class="toc-nav-number">1.3.1.</span> <span class="toc-nav-text">全局安装 verdaccio</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#启动-verdaccio"><span class="toc-nav-number">1.3.2.</span> <span class="toc-nav-text">启动 verdaccio</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#登录到私有仓库上"><span class="toc-nav-number">1.3.3.</span> <span class="toc-nav-text">登录到私有仓库上</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#发布-npm-包到私有仓库"><span class="toc-nav-number">1.3.4.</span> <span class="toc-nav-text">发布 npm 包到私有仓库</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#从私有仓库中下载私有包"><span class="toc-nav-number">1.3.5.</span> <span class="toc-nav-text">从私有仓库中下载私有包</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#全局安装-nrm"><span class="toc-nav-number">1.3.5.1.</span> <span class="toc-nav-text">全局安装 nrm</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#缓存-npm-公共包"><span class="toc-nav-number">1.3.6.</span> <span class="toc-nav-text">缓存 npm 公共包</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#关于守护进程"><span class="toc-nav-number">1.3.7.</span> <span class="toc-nav-text">关于守护进程</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#全局安装-pm2"><span class="toc-nav-number">1.3.7.1.</span> <span class="toc-nav-text">全局安装 pm2</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#用-pm2-启动-verdaccio"><span class="toc-nav-number">1.3.7.2.</span> <span class="toc-nav-text">用 pm2 启动 verdaccio</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#访问私有仓库"><span class="toc-nav-number">1.3.7.3.</span> <span class="toc-nav-text">访问私有仓库</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#遇到的问题"><span class="toc-nav-number">1.3.7.4.</span> <span class="toc-nav-text">遇到的问题</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-6"><a class="toc-nav-link" href="#解决："><span class="toc-nav-number">1.3.7.4.1.</span> <span class="toc-nav-text">解决：</span></a></li><li class="toc-nav-item toc-nav-level-6"><a class="toc-nav-link" href="#解决：-1"><span class="toc-nav-number">1.3.7.4.2.</span> <span class="toc-nav-text">解决：</span></a></li></ol></li></ol></li></ol></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#verdaccio" title="verdaccio">verdaccio</a>
+                        
+                          <a class="tag" href="/tags/#npm" title="npm">npm</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://xiaopf.github.io" target="_blank">xiaopf&#39;s Blog</a></li>
+                    
+                        <li><a href="https://github.com/xiaopf" target="_blank">xiaopf&#39;s Github</a></li>
+                    
+                        <li><a href="#" target="_blank">Other</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<!-- star 模式通过时间控制 -->
+
+<style  type="text/css">
+    .notice {
+        color:rgba(51,51,51,0.9);
+        margin:0px;
+        padding:0px;
+    }
+
+    .visitor_notice a {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+
+    .stars .notice {
+        color:white;
+        margin:0px;
+        padding:0px;
+    }
+
+    .stars .visitor_notice a {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .stars .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+</style>
+
+<style  type="text/css">
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+
+        .comment_notes_blank {
+            height:100px;
+        }
+        
+        .comment_notes {
+            color:rgba(51,51,51,0.9);
+            text-align:left;
+            font-style:italic;
+        }
+
+        .visitor_notice {
+            border:1px solid rgba(209,216,220,0.9);
+            padding:20px 20px 20px 20px;
+            border-radius:10px;
+        }
+
+        .visitor_notice img{
+            height:40px;
+            width:40px;
+            float:left;
+            position:relative;
+            margin:0px 10px 0px 0px;
+            padding:0px;
+            top:0px;
+            left:0px;
+        }
+    }
+
+    .comment_notes_blank {
+        height:100px;
+    }
+    
+    .comment_notes {
+        color:rgba(51,51,51,0.9);
+        text-align:left;
+        font-style:italic;
+    }
+
+    .visitor_notice {
+        border:1px solid rgba(209,216,220,0.9);
+        padding:20px 20px 20px 20px;
+        border-radius:10px;
+    }
+
+    .visitor_notice img{
+        height:40px;
+        width:40px;
+        float:left;
+        position:relative;
+        margin:0px 10px 0px 0px;
+        padding:0px;
+        top:0px;
+        left:0px;
+    }
+
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/xiaopf">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/perfect_shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.instagram.com/perfect__shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/pf-xiao">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; xiaopf 2020 
+                    <br>
+                    Powered by 
+                    <a href="https://github.com/dusign/hexo-theme-snail" target="_blank" rel="noopener">
+                        <i>hexo-theme-snail</i>
+                    </a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0"
+                        width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=dusign&repo=hexo-theme-snail&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+<!-- Search -->
+<script src="/js/search.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://xiaopf.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-154429678-1';
+    var _gaDomain = 'https://xiaopf.github.io/';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Search -->
+
+    <script type="text/javascript">      
+        var search_path = "search.xml";
+        if (search_path.length == 0) {
+            search_path = "search.xml";
+        }
+    var path = "/" + search_path;
+    searchFunc(path, 'local-search-input', 'local-search-result');
+    </script>
+
+
+<!-- busuanzi -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+
+    
+        <!-- background effects start -->
+        
+
+        
+            <script type="text/javascript" src="/js/mouse-click.js" content='[&#34;🌱&#34;,&#34;just do it&#34;,&#34;🌾&#34;,&#34;🍀&#34;,&#34;don&#39;t give up&#34;,&#34;🍂&#34;,&#34;🌻&#34;,&#34;try it again&#34;,&#34;🍃&#34;,&#34;never say die&#34;,&#34;🌵&#34;,&#34;🌿&#34;,&#34;🌴&#34;]' color='[&#34;rgb(121,93,179)&#34; ,&#34;rgb(76,180,231)&#34; ,&#34;rgb(184,90,154)&#34; ,&#34;rgb(157,211,250)&#34; ,&#34;rgb(255,0,0)&#34; ,&#34;rgb(242,153,29)&#34; ,&#34;rgb(23,204,16)&#34; ,&#34;rgb(222,0,0)&#34; ,&#34;rgb(22,36,92)&#34; ,&#34;rgb(127,24,116)&#34; ,&#34;rgb(119,195,79)&#34; ,&#34;rgb(4,77,34)&#34; ,&#34;rgb(122,2,60)&#34;]'></script>
+        
+
+        <!-- background effects end -->
+    
+
+</body>
+
+</html>

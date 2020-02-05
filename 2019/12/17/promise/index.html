@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="baidu-site-verification" content="093lY4ziMu" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="description" content="记录生活，记录知识">
+    <meta name="keyword"  content="javascript, frontEnd">
+    <link rel="shortcut icon" href="/img/header.jpg ">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!--<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>-->
+    <title>
+        
+          ES6 Promise总结并实现一个Promise - xiaopf
+        
+    </title>
+
+    <link rel="canonical" href="https://xiaopf.github.io/2019/12/17/promise/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/xiaopf.css">
+    <!-- background effects end -->
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/fonts.googleapis.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <!--<link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+
+    <link rel="stylesheet" href="/css/font-awesome.css">
+
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    
+        <!-- background effects start -->
+        <!-- show star -->
+        <canvas id="canv" width="1440" height="768"></canvas>
+<script>
+  var num = 200;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  var max = 100;
+  var _x = 0;
+  var _y = 0;
+  var _z = 150;
+  var dtr = function(d) {
+    return d * Math.PI / 180;
+  };
+
+  var rnd = function() {
+    return Math.sin(Math.floor(Math.random() * 360) * Math.PI / 180);
+  };
+  var dist = function(p1, p2, p3) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) + Math.pow(p2.z - p1.z, 2));
+  };
+
+  var cam = {
+    obj: {
+      x: _x,
+      y: _y,
+      z: _z
+    },
+    dest: {
+      x: 0,
+      y: 0,
+      z: 1
+    },
+    dist: {
+      x: 0,
+      y: 0,
+      z: 200
+    },
+    ang: {
+      cplane: 0,
+      splane: 0,
+      ctheta: 0,
+      stheta: 0
+    },
+    zoom: 1,
+    disp: {
+      x: w / 2,
+      y: h / 2,
+      z: 0
+    },
+    upd: function() {
+      cam.dist.x = cam.dest.x - cam.obj.x;
+      cam.dist.y = cam.dest.y - cam.obj.y;
+      cam.dist.z = cam.dest.z - cam.obj.z;
+      cam.ang.cplane = -cam.dist.z / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.splane = cam.dist.x / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.ctheta = Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z) / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+      cam.ang.stheta = -cam.dist.y / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+    }
+  };
+
+  var trans = {
+    parts: {
+      sz: function(p, sz) {
+        return {
+          x: p.x * sz.x,
+          y: p.y * sz.y,
+          z: p.z * sz.z
+        };
+      },
+      rot: {
+        x: function(p, rot) {
+          return {
+            x: p.x,
+            y: p.y * Math.cos(dtr(rot.x)) - p.z * Math.sin(dtr(rot.x)),
+            z: p.y * Math.sin(dtr(rot.x)) + p.z * Math.cos(dtr(rot.x))
+          };
+        },
+        y: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.y)) + p.z * Math.sin(dtr(rot.y)),
+            y: p.y,
+            z: -p.x * Math.sin(dtr(rot.y)) + p.z * Math.cos(dtr(rot.y))
+          };
+        },
+        z: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.z)) - p.y * Math.sin(dtr(rot.z)),
+            y: p.x * Math.sin(dtr(rot.z)) + p.y * Math.cos(dtr(rot.z)),
+            z: p.z
+          };
+        }
+      },
+      pos: function(p, pos) {
+        return {
+          x: p.x + pos.x,
+          y: p.y + pos.y,
+          z: p.z + pos.z
+        };
+      }
+    },
+    pov: {
+      plane: function(p) {
+        return {
+          x: p.x * cam.ang.cplane + p.z * cam.ang.splane,
+          y: p.y,
+          z: p.x * -cam.ang.splane + p.z * cam.ang.cplane
+        };
+      },
+      theta: function(p) {
+        return {
+          x: p.x,
+          y: p.y * cam.ang.ctheta - p.z * cam.ang.stheta,
+          z: p.y * cam.ang.stheta + p.z * cam.ang.ctheta
+        };
+      },
+      set: function(p) {
+        return {
+          x: p.x - cam.obj.x,
+          y: p.y - cam.obj.y,
+          z: p.z - cam.obj.z
+        };
+      }
+    },
+    persp: function(p) {
+      return {
+        x: p.x * cam.dist.z / p.z * cam.zoom,
+        y: p.y * cam.dist.z / p.z * cam.zoom,
+        z: p.z * cam.zoom,
+        p: cam.dist.z / p.z
+      };
+    },
+    disp: function(p, disp) {
+      return {
+        x: p.x + disp.x,
+        y: -p.y + disp.y,
+        z: p.z + disp.z,
+        p: p.p
+      };
+    },
+    steps: function(_obj_, sz, rot, pos, disp) {
+      var _args = trans.parts.sz(_obj_, sz);
+      _args = trans.parts.rot.x(_args, rot);
+      _args = trans.parts.rot.y(_args, rot);
+      _args = trans.parts.rot.z(_args, rot);
+      _args = trans.parts.pos(_args, pos);
+      _args = trans.pov.plane(_args);
+      _args = trans.pov.theta(_args);
+      _args = trans.pov.set(_args);
+      _args = trans.persp(_args);
+      _args = trans.disp(_args, disp);
+      return _args;
+    }
+  };
+  const canvasObj = document.getElementById("canv");
+  (function() {
+    "use strict";
+    // 移动端不开启悬浮的星星
+    const UA = window.navigator.userAgent;
+    if(UA.indexOf('Android') >= 0 || UA.indexOf('iPhone') >= 0){
+        return false;
+    }
+    // 控制star显示隐藏
+    const mode = window.localStorage.getItem('mode');
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      canvasObj.style.display = "none";
+      document.body.style.backgroundColor = "transparent";
+      return false;
+    } else {
+      canvasObj.style.display = "block";
+      document.body.className = "stars"
+      document.body.style.backgroundColor = "rgba(26,26,26,1)";
+      document.body.style.color = "#fff";
+      setTimeout(() => {
+        const gitmentContainer = document.getElementsByClassName("gitment-container");
+        const gitmentEditorPreview = document.getElementsByClassName("gitment-editor-preview");
+        const gitmentHeartIcon = document.getElementsByClassName("gitment-heart-icon");
+        if(gitmentContainer.length > 0 && gitmentEditorPreview.length > 0 && gitmentHeartIcon.length > 0) {
+            gitmentContainer[0].style.color = "#fff";
+            gitmentContainer[1].style.color = "#fff";
+            gitmentEditorPreview[0].style.backgroundColor = "#fff";
+            gitmentHeartIcon[0].style.fill = "#fff";
+        }
+      }, 2000);
+    }
+
+    var threeD = function(param) {
+      this.transIn = {};
+      this.transOut = {};
+      this.transIn.vtx = (param.vtx);
+      this.transIn.sz = (param.sz);
+      this.transIn.rot = (param.rot);
+      this.transIn.pos = (param.pos);
+    };
+
+    threeD.prototype.vupd = function() {
+      this.transOut = trans.steps(
+
+        this.transIn.vtx,
+        this.transIn.sz,
+        this.transIn.rot,
+        this.transIn.pos,
+        cam.disp
+      );
+    };
+
+    var Build = function() {
+      this.vel = 0.04;
+      this.lim = 360;
+      this.diff = 200;
+      this.initPos = 100;
+      this.toX = _x;
+      this.toY = _y;
+      this.go();
+    };
+
+    Build.prototype.go = function() {
+      this.canvas = document.getElementById("canv");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+      this.$ = canv.getContext("2d");
+      this.$.globalCompositeOperation = 'source-over';
+      this.varr = [];
+      this.dist = [];
+      this.calc = [];
+
+      for (var i = 0, len = num; i < len; i++) {
+        this.add();
+      }
+
+      this.rotObj = {
+        x: 0,
+        y: 0,
+        z: 0
+      };
+      this.objSz = {
+        x: w / 5,
+        y: h / 5,
+        z: w / 5
+      };
+    };
+
+    Build.prototype.add = function() {
+      this.varr.push(new threeD({
+        vtx: {
+          x: rnd(),
+          y: rnd(),
+          z: rnd()
+        },
+        sz: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+        rot: {
+          x: 20,
+          y: -20,
+          z: 0
+        },
+        pos: {
+          x: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          y: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          z: this.diff * Math.sin(360 * Math.random() * Math.PI / 180)
+        }
+      }));
+      this.calc.push({
+        x: 360 * Math.random(),
+        y: 360 * Math.random(),
+        z: 360 * Math.random()
+      });
+    };
+
+    Build.prototype.upd = function() {
+      cam.obj.x += (this.toX - cam.obj.x) * 0.05;
+      cam.obj.y += (this.toY - cam.obj.y) * 0.05;
+    };
+
+    Build.prototype.draw = function() {
+      this.$.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      cam.upd();
+      this.rotObj.x += 0.1;
+      this.rotObj.y += 0.1;
+      this.rotObj.z += 0.1;
+
+      for (var i = 0; i < this.varr.length; i++) {
+        for (var val in this.calc[i]) {
+          if (this.calc[i].hasOwnProperty(val)) {
+            this.calc[i][val] += this.vel;
+            if (this.calc[i][val] > this.lim) this.calc[i][val] = 0;
+          }
+        }
+
+        this.varr[i].transIn.pos = {
+          x: this.diff * Math.cos(this.calc[i].x * Math.PI / 180),
+          y: this.diff * Math.sin(this.calc[i].y * Math.PI / 180),
+          z: this.diff * Math.sin(this.calc[i].z * Math.PI / 180)
+        };
+        this.varr[i].transIn.rot = this.rotObj;
+        this.varr[i].transIn.sz = this.objSz;
+        this.varr[i].vupd();
+        if (this.varr[i].transOut.p < 0) continue;
+        var g = this.$.createRadialGradient(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p, this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2);
+        this.$.globalCompositeOperation = 'lighter';
+        g.addColorStop(0, 'hsla(255, 255%, 255%, 1)');
+        g.addColorStop(.5, 'hsla(' + (i + 2) + ',85%, 40%,1)');
+        g.addColorStop(1, 'hsla(' + (i) + ',85%, 40%,.5)');
+        this.$.fillStyle = g;
+        this.$.beginPath();
+        this.$.arc(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2, 0, Math.PI * 2, false);
+        this.$.fill();
+        this.$.closePath();
+      }
+    };
+    Build.prototype.anim = function() {
+      window.requestAnimationFrame = (function() {
+        return window.requestAnimationFrame ||
+          function(callback, element) {
+            window.setTimeout(callback, 1000 / 60);
+          };
+      })();
+      var anim = function() {
+        this.upd();
+        this.draw();
+        window.requestAnimationFrame(anim);
+      }.bind(this);
+      window.requestAnimationFrame(anim);
+    };
+
+    Build.prototype.run = function() {
+      this.anim();
+
+      window.addEventListener('mousemove', function(e) {
+        this.toX = (e.clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        this.toX = (e.touches[0].clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.touches[0].clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('mousedown', function(e) {
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+      window.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+    };
+    var app = new Build();
+    app.run();
+  })();
+  
+  window.addEventListener('resize', function() {
+    canvasObj.width = w = window.innerWidth;
+    canvasObj.height = h = window.innerHeight;
+  }, false);
+  
+</script>
+
+<style  type="text/css">
+  body{
+    text-align: -webkit-auto;
+  }
+  .stars div,.stars p,.stars ul,.stars li{
+    color: #fff;
+    filter:alpha(Opacity=90);
+    -moz-opacity:0.98;
+    opacity: 0.98; 
+  }
+  body hr{
+    background-color: rgba(255,255,255,0.4);
+    height: 1px;
+    border: none;
+  }
+  #cnblogs_post_body p img{
+    max-width: 100%;
+  }
+  #container {
+    width: 90%;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+  }
+  #canv{
+    position: fixed;
+    display: none;
+  }
+  .cnblogs_code {
+    color: #f8f8f8;
+    background-color: rgba(245, 245, 245, 0);
+    border: 1px solid #cccccc6e;
+  }
+  .cnblogs_code span{
+    color: #ccc!important;
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code div {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  .cnblogs_code_toolbar a:link{
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code_toolbar a:link img{
+    background-color:#f5f5f500!important;
+  }
+  div.commentform textarea.comment_textarea {
+    background-color: #f0f8ff00;
+  }
+</style>
+        <!-- background effects end -->
+    
+
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('es6.jpg')
+            /*post*/
+        
+    }
+    
+    #signature{
+        background-image: url('/img/signature/Just-do-it-white.png');
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#javascript" title="javascript">javascript</a>
+                            
+                              <a class="tag" href="/tags/#基础" title="基础">基础</a>
+                            
+                              <a class="tag" href="/tags/#ES6" title="ES6">ES6</a>
+                            
+                        </div>
+                        <h1>ES6 Promise总结并实现一个Promise</h1>
+                        <h2 class="subheading">深入理解Promise</h2>
+                        <span class="meta">
+                            Posted by xiaopf on
+                            2019-12-17
+                        </span>
+
+                        
+                            <div class="blank_box"></div>
+                            <span class="meta">
+                                Words <span class="post-count">4.5k</span> and
+                                Reading Time <span class="post-count">20</span> Minutes
+                            </span>
+                            <div class="blank_box"></div>
+                            <!-- 不蒜子统计 start -->
+                            <span class="meta">
+                                Viewed <span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span> Times
+                            </span>
+                            <!-- 不蒜子统计 end -->
+                        
+
+                    </div>
+                
+
+                </div>
+            </div>
+        </div>      
+    </div>
+    <div class="waveWrapper">
+        <div class="wave wave_before" style="background-image: url('/img/wave-top80.png')"></div>
+        <div class="wave wave_after" style="background-image: url('/img/wave-top80.png')"></div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">xiaopf&#39;s site</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    <li style="cursor: pointer;">
+                        <p id="changeMode" class="change-mode" title="change mode">
+                            Mode
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    const $body   = document.body;
+    const $toggle = document.querySelector('.navbar-toggle');
+    const $navbar = document.querySelector('#huxblog_navbar');
+    const $collapse = document.querySelector('.navbar-collapse');
+    const $changeMode = document.querySelector('#changeMode');
+    const mode = window.localStorage.getItem('mode');
+    $changeMode.addEventListener('click', handleChangeMode)
+    $toggle.addEventListener('click', handleMagic)
+    
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      $changeMode.innerHTML='STAR'
+    } else {
+      $changeMode.innerHTML='LIGHT'
+    }
+    
+    function handleChangeMode(e){
+        if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+            window.localStorage.setItem('mode','star');
+        }else{
+            window.localStorage.setItem('mode','light');
+        }
+        window.location.reload()
+    }
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="ES6-Promise-总结并实现一个Promise"><a href="#ES6-Promise-总结并实现一个Promise" class="headerlink" title="ES6 Promise 总结并实现一个Promise"></a>ES6 Promise 总结并实现一个Promise</h2><h3 id="Promise使用总结"><a href="#Promise使用总结" class="headerlink" title="Promise使用总结"></a>Promise使用总结</h3><h4 id="Promise-的含义"><a href="#Promise-的含义" class="headerlink" title="Promise 的含义"></a>Promise 的含义</h4><p>Promise 是异步编程的一种解决方案，比传统的解决方案——回调函数和事件——更合理和更强大。它由社区最早提出和实现，ES6 将其写进了语言标准，统一了用法，原生提供了Promise对象。</p>
+<h4 id="Promise-就是一个状态机"><a href="#Promise-就是一个状态机" class="headerlink" title="Promise 就是一个状态机"></a>Promise 就是一个状态机</h4><p>三种状态</p>
+<ul>
+<li>pending（进行中）</li>
+<li>fulfilled（已成功）</li>
+<li>rejected（已失败）</li>
+</ul>
+<p>状态转变</p>
+<ul>
+<li>初始化处于 pending 状态</li>
+<li>调用 resolve() 之后，pending -&gt; fulfilled</li>
+<li>调用 reject() 之后，pending -&gt; rejected</li>
+</ul>
+<p>Promise的特点：</p>
+<ul>
+<li>对象的状态不受外界影响</li>
+<li>一旦状态改变，就不会再变</li>
+</ul>
+<h4 id="基本用法"><a href="#基本用法" class="headerlink" title="基本用法"></a>基本用法</h4><p>Promise是一个构造函数，所以需要用new实例化返回一个promise的对象，可以直接在后面调用then，也可以在promise对象身上调用then。</p>
+<p>Promise构造函数接受一个函数作为参数，该函数的两个参数分别是resolve和reject。它们是两个函数，由 JavaScript 引擎提供，不用自己部署。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> promise = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">//实例化的同时就已经触发执行了</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(<span class="comment">/*最早执行*/</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">//模拟异步操作</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (<span class="comment">/*true*/</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">            resolve(<span class="comment">/*给then回调传参*/</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">        &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">            reject(<span class="comment">/*给catch回调传参*/</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">    &#125;, <span class="number">2000</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">&#125;).then(<span class="function">(<span class="params"><span class="regexp">/*resolve给的参数*/</span></span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(<span class="comment">/*resolve给的参数*/</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">&#125;).catch(<span class="function">(<span class="params"><span class="regexp">/*给catch回调传参*/</span></span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(<span class="comment">/*给catch回调传参*/</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure><br>Promise实例化接受的函数内部，是在实例化的同时就已经执行啦。</p>
+<p>then方法第二个参数是可选的，是reject()执行后触发执行的回调函数，可以省略，直接用catch代替。</p>
+<p>resolve函数接受的<font color=red>参数</font>是会传递给then方法里面的回调函数作为参数的。catch可以捕获链式调用前面的错误，也可以获取reject传的的参数。</p>
+<h4 id="Promise-prototype-then"><a href="#Promise-prototype-then" class="headerlink" title="Promise.prototype.then()"></a>Promise.prototype.then()</h4><p>Promise 实例具有then方法，也就是说，then方法是定义在原型对象，then方法返回的是一个Promise的实例，不是原来的Promise实例，而是一个全新的实例。因此then方法后面还可以继续调用then方法。前一个then接收的回调函数return的返回值，直接传递到下一个then接收的回调函数作为参数。如果前一个回调中返回的是一个promise对象，那么后一个then需要等到返回的promise变化后才会执行。<br><figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> Promise(<span class="function"><span class="params">(resolve, reject)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">        resove(<span class="number">1</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    &#125;,<span class="number">1000</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;).<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value) <span class="regexp">//</span> <span class="number">1</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="number">2</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">&#125;).<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value) <span class="regexp">//</span> <span class="number">2</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure></p>
+<h4 id="Promise-all"><a href="#Promise-all" class="headerlink" title="Promise.all()"></a>Promise.all()</h4><p>Promise.all()方法用于将多个 Promise 实例，包装成一个新的 Promise 实例。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="built_in">Promise</span>.all([p1, p2, p3]).then(<span class="function">(<span class="params">values</span>)=&gt;</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(values); <span class="comment">//values是p1,p2,p3 resolve接受的参数的数组，如果某一个实例没有传参，则为数组对应的位置是undefind</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">&#125;).catch(<span class="function">(<span class="params">err</span>)=&gt;</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(err); <span class="comment">// err是p1,p2,p3中第一个reject接受的参数，不是数组</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure><br>接受一个数组为参数，数组中元素都是Promise的实例（如果不是，会调用Promise.resolve方法）。只有当所有Promise实例全部转变成 fulfilled 状态后，p才会变成fulfilled状态，只要有一个实例rejected，p的状态就变成rejected状态。</p>
+<p>注意，如果作为参数的 Promise 实例，自己定义了catch方法，那么它一旦被rejected，并不会触发Promise.all()的catch方法。</p>
+<h4 id="Promise-race"><a href="#Promise-race" class="headerlink" title="Promise.race()"></a>Promise.race()</h4><p>Promise.race()方法同样是将多个 Promise 实例，包装成一个新的 Promise 实例。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="built_in">Promise</span>.race([p1, p2, p3]).then(<span class="function">(<span class="params">value</span>)=&gt;</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value); <span class="comment">//value是p1,p2,p3中第一个resolve接受的参数，不是数组</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">&#125;).catch(<span class="function">(<span class="params">errs</span>)=&gt;</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(errs); <span class="comment">// errs是p1,p2,p3 reject接受的参数的数组，如果某一个实例没有传参，则为数组对应的位置是undefind</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure><br>接受一个数组为参数，数组中元素都是Promise的实例（如果不是，会调用Promise.resolve方法）。只要其中一个Promise实例转变成 fulfilled 状态，p 就会变成fulfilled状态，只有全部实例都rejected，p的状态才会变成rejected状态。</p>
+<h4 id="Promise-allSettled"><a href="#Promise-allSettled" class="headerlink" title="Promise.allSettled()"></a>Promise.allSettled()</h4><p>Promise.allSettled()方法接受一组 Promise 实例作为参数，包装成一个新的 Promise 实例。只有等到所有这些参数实例都返回结果，不管是fulfilled还是rejected，包装实例才会结束。该方法由 ES2020 引入。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> resolved = <span class="built_in">Promise</span>.resolve(<span class="number">42</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> rejected = <span class="built_in">Promise</span>.reject(<span class="number">-1</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> allSettledPromise = <span class="built_in">Promise</span>.allSettled([resolved, rejected]);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">allSettledPromise.then(<span class="function"><span class="keyword">function</span> (<span class="params">results</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">  <span class="built_in">console</span>.log(results);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">&#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// [</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line"><span class="comment">//    &#123; status: 'fulfilled', value: 42 &#125;,</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"><span class="comment">//    &#123; status: 'rejected', reason: -1 &#125;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// ]</span></span></pre></td></tr></table></figure><br>有时候，我们不关心异步操作的结果，只关心这些操作有没有结束。这时，Promise.allSettled()方法就很有用。如果没有这个方法，想要确保所有操作都结束，就很麻烦。Promise.all()方法无法做到这一点。</p>
+<h4 id="Promise-resolve"><a href="#Promise-resolve" class="headerlink" title="Promise.resolve()"></a>Promise.resolve()</h4><p>有时需要将现有对象转为 Promise 对象，Promise.resolve()方法就起到这个作用。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve(<span class="string">'foo'</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// 等价于</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> resolve(<span class="string">'foo'</span>))</span></pre></td></tr></table></figure><br>参数</p>
+<ul>
+<li>参数是 Promise 实例，那么Promise.resolve将不做任何修改、原封不动地返回这个实例。</li>
+<li>参数是一个thenable对象，则将这个对象转为 Promise 对象，然后就立即执行thenable对象的then方法。</li>
+<li>参数是一个原始值，或者是一个不具有then方法的对象，则Promise.resolve方法返回一个新的 Promise 对象，状态为resolved。</li>
+<li>调用时不带参数，直接返回一个resolved状态的 Promise 对象。</li>
+</ul>
+<h4 id="Promise-reject"><a href="#Promise-reject" class="headerlink" title="Promise.reject()"></a>Promise.reject()</h4><p>Promise.reject(reason)方法也会返回一个新的 Promise 实例，该实例的状态为rejected。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="built_in">Promise</span>.reject(<span class="string">'出错了'</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// 等同于</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> p = <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> reject(<span class="string">'出错了'</span>))</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">p.then(<span class="literal">null</span>, <span class="function"><span class="keyword">function</span> (<span class="params">s</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">  <span class="built_in">console</span>.log(s)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">&#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// 出错了</span></span></pre></td></tr></table></figure></p>
+<h3 id="实现一个Promise"><a href="#实现一个Promise" class="headerlink" title="实现一个Promise"></a>实现一个Promise</h3><h4 id="Promise的构造函数"><a href="#Promise的构造函数" class="headerlink" title="Promise的构造函数"></a>Promise的构造函数</h4><ol>
+<li>由于后面会多次涉及到this实例对象，为了避免混乱直接用self拿到this代表的实例对象。</li>
+<li>由于promise实例或涉及到3个状态，所以需要有一个status属性保存状态。</li>
+<li>resolve/reject会接受参数并传递给then接受的回调函数中做参数，所以需要一个data属性存放这个值。</li>
+<li>当Promise实例状态转变之后，会执行then中的回调函数，所以需要两个保存回调的数组，至于为什么是数组，后面会举例说明。</li>
+<li>当Promise实例化之后，构造函数收到回调函数会立即执行，因此需要立即执行fn函数，由于可能会出现报错（throw Error）所以需要用到 try catch</li>
+<li>构造函数传入的回调函数在执行的时候需要 resolve 和 reject 两个函数作为参数，因此这两个函数也是在构造函数中定义的。</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">PromiseX</span> <span class="params">(fn)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// 避免后面this混乱</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">const</span> <span class="keyword">self</span> = this;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// 保存Promise实例状态</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">self</span>.status = <span class="string">'pending'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// 保存传递的参数数据</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">self</span>.data = <span class="string">''</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// Promise resolve/reject时的回调函数集，因为在Promise结束之前有可能有多个回调添加到它上面</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// 非链式调用会出现多个，具体后面举例</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">self</span>.onResolvedQueue = [];</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">self</span>.onRejectedQueue = [];</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">17</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// 实例化立即执行fn</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">18</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">19</span></pre></td><td class="code"><pre><span class="line">        fn(resolve,reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">20</span></pre></td><td class="code"><pre><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">21</span></pre></td><td class="code"><pre><span class="line">        reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">22</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">23</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">24</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">resolve</span> <span class="params">()</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">25</span></pre></td><td class="code"><pre><span class="line">        ....</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">26</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">27</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">reject</span> <span class="params">()</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">28</span></pre></td><td class="code"><pre><span class="line">        ....</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">29</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">30</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure>
+<h4 id="resolve-reject-函数实现"><a href="#resolve-reject-函数实现" class="headerlink" title="resolve reject 函数实现"></a>resolve reject 函数实现</h4><p>resolve和reject实际上是在 Promise 接收到 fn 回调函数中执行的。</p>
+<p>一般情况下是 fn 中的异步操作结束返回结果后，成功了 resolve(value)，失败了 reject(reason)。<br><figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> Promise(<span class="function"><span class="params">(resolve, reject)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(<span class="number">111</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="regexp">//</span> 模拟异步操作</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">        resolve(<span class="number">222</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    &#125;, <span class="number">2000</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">&#125;).<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure></p>
+<p>也有的情况不是异步操作，直接就调用了。</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> Promise(<span class="function"><span class="params">(resolve, reject)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(<span class="number">111</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    resolve(<span class="number">222</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">&#125;).<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure>
+<p>总之是Promise实例状态需要转变的时候就会调用他们了。</p>
+<ol>
+<li>当状态要变化的时候，实际还没有变化，所以状态应该还是 pending 状态</li>
+<li>将self.status转移到对应的状态。</li>
+<li>需要把接收到的参数给self.data存起来.</li>
+<li>状态转移完了，参数也保存完了，就需要执行then中的回调函数了</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">PromiseX</span> <span class="params">(fn)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">//....</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">resolve</span> <span class="params">(value)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (selft.status === <span class="string">'pending'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.status = <span class="string">'fulfilled'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.data = value;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.onResolvedQueue.<span class="keyword">forEach</span>(resolved =&gt; resolved(value));</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">reject</span> <span class="params">(reason)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (selft.status === <span class="string">'pending'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.status = <span class="string">'rejected'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.data = reason;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.onRejectedQueue.<span class="keyword">forEach</span>(rejected =&gt; rejected(reason));</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">17</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">18</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure>
+<h4 id="then-方法"><a href="#then-方法" class="headerlink" title="then 方法"></a>then 方法</h4><p>Promise实例有一个then方法，是状态转变后的回调，很明显是应该写在原型上。具体使用上面有介绍。</p>
+<ol>
+<li>then方法调用后，立即就会进入执行阶段。</li>
+<li>then方法接受两个回调函数：一个是resolve后执行的，一个是reject后执行的，第二个可以省略。所以先判断两个是否是 function。</li>
+<li>如果构造函数实例化的时候接受的回调函数里面有异步操作的话，then执行是先于状态转变的，也就是 then 被调用的时候，Promise对象状态是 pending，大部分都是这种情况。这个时候就需要把then的回调推入Promise实例对象的执行队列中，等待状态转变后执行。</li>
+<li>then方法返回的是一个新的 Promise 实例。当then的回调有return的时候，如果return的是Promise实例对象的话，那么then后跟的then（实际是then里的回调）就需要等待这个Promise实例对象状态转变后执行，如果return的是其他的话，其他会被Promise.resolve方法包裹，然后立即执行后面的then。 </li>
+<li>如果构造函数实例化的时候接受的回调函数里面<font color=red>没有</font>异步操作的话，直接调用了 resolve/reject，在Promise实例化的时候状态就已经转变了成 fulfilled/rejected 了，也就是说then 被调用的时候，状态已经不是 pending 了。</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">PromiesX.prototype.then = <span class="function"><span class="keyword">function</span> <span class="params">(onResolve,onReject)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">const</span> <span class="keyword">self</span> = this;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    onResolve = typeof onResolve === <span class="string">'function'</span> ? onResolve : <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;&#125;;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    onReject = typeof onReject === <span class="string">'function'</span> ? onReject : <span class="function"><span class="keyword">function</span> <span class="params">()</span> </span>&#123;&#125;;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span>(<span class="keyword">self</span>.status === <span class="string">'pending'</span>)&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PromiseX ((resolve,reject) =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">            <span class="comment">// 因为状态未转变，所以成功与失败的回调都需要推进队列</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.onResolvedQueue.push(<span class="function"><span class="keyword">function</span><span class="params">()</span></span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = onResolve(<span class="keyword">self</span>.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">17</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">18</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">19</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">20</span></pre></td><td class="code"><pre><span class="line">            &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">21</span></pre></td><td class="code"><pre><span class="line">                </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">22</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">self</span>.onRejectedQueue.push(<span class="function"><span class="keyword">function</span><span class="params">()</span></span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">23</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">24</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = reject(<span class="keyword">self</span>.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">25</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">26</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">27</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">28</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">29</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">30</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">31</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">32</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">33</span></pre></td><td class="code"><pre><span class="line">            &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">34</span></pre></td><td class="code"><pre><span class="line">                </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">35</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">36</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">37</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">38</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.status === <span class="string">'fulfilled'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">39</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Promise((resolve,reject) =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">40</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">41</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">const</span> x = onResolve(<span class="keyword">self</span>.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">42</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">43</span></pre></td><td class="code"><pre><span class="line">                    x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">44</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">45</span></pre></td><td class="code"><pre><span class="line">                    resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">46</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">47</span></pre></td><td class="code"><pre><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">48</span></pre></td><td class="code"><pre><span class="line">                reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">49</span></pre></td><td class="code"><pre><span class="line">            &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">50</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">51</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">52</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">53</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span> (<span class="keyword">self</span>.status === <span class="string">'fulfilled'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">54</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Promise((resolve,reject) =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">55</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">56</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">const</span> x = reject(<span class="keyword">self</span>.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">57</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">58</span></pre></td><td class="code"><pre><span class="line">                    x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">59</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">60</span></pre></td><td class="code"><pre><span class="line">                    resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">61</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">62</span></pre></td><td class="code"><pre><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">63</span></pre></td><td class="code"><pre><span class="line">                reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">64</span></pre></td><td class="code"><pre><span class="line">            &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">65</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">66</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">67</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">68</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">69</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// catch实际上就是then方法第一个参数传null</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">70</span></pre></td><td class="code"><pre><span class="line">Promise.prototype.<span class="keyword">catch</span> = <span class="function"><span class="keyword">function</span> <span class="params">(onRejected)</span> </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">71</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> this.then(<span class="keyword">null</span>, onRejected)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">72</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure>
+<h4 id="穿透"><a href="#穿透" class="headerlink" title="穿透"></a>穿透</h4><p>上面基本上就是一个基本能用的Promise实现了，看一下下面的代码,运行完成是可以alert 8的，也就是说8 穿透了多个 then 方法。但实际上，上面的代码是 undefined<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span>=&gt;</span>resolve(<span class="number">8</span>))</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  .then()</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">  .then()</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">  .then(<span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">value</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    alert(value)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">  &#125;)</span></pre></td></tr></table></figure><br>那么问题出在了哪里呢，实际上是中间的then方法没有接到参数,根据下面的代码，onResolve<br>和onReject没有传，所以赋值为空function啦，只要把参数向下传递就好了<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attr">onResolve</span> = typeof <span class="literal">on</span>Resolve === <span class="string">'function'</span> ? <span class="literal">on</span>Resolve : function () &#123;&#125;<span class="comment">;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="attr">onReject</span> = typeof <span class="literal">on</span>Reject === <span class="string">'function'</span> ? <span class="literal">on</span>Reject : function () &#123;&#125;<span class="comment">;</span></span></pre></td></tr></table></figure><br>改成<br><figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="attr">onResolve</span> = typeof <span class="literal">on</span>Resolve === <span class="string">'function'</span> ? <span class="literal">on</span>Resolve : value =&gt; value<span class="comment">;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="attr">onReject</span> = typeof <span class="literal">on</span>Reject === <span class="string">'function'</span> ? <span class="literal">on</span>Reject : reason =&gt; &#123;throw reason&#125;<span class="comment">;</span></span></pre></td></tr></table></figure></p>
+<h4 id="其他Promise方法"><a href="#其他Promise方法" class="headerlink" title="其他Promise方法"></a>其他Promise方法</h4><h4 id="Promise-resolve-1"><a href="#Promise-resolve-1" class="headerlink" title="Promise.resolve"></a>Promise.resolve</h4><p>返回一个fulfilled状态的promise对象<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve = <span class="function"><span class="keyword">function</span> (<span class="params">reason</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">        resolve(reason)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure></p>
+<h4 id="Promise-rejected"><a href="#Promise-rejected" class="headerlink" title="Promise.rejected"></a>Promise.rejected</h4><p>返回一个rejected状态的promise对象<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.reject = <span class="function"><span class="keyword">function</span> (<span class="params">reason</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">        reject(reason)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure></p>
+<h4 id="Promise-all-1"><a href="#Promise-all-1" class="headerlink" title="Promise.all"></a>Promise.all</h4><p>接收一个promise对象数组为参数 只有全部 promise 进入 fulfilled 状态才会继续后面的处理 通常会用来处理 多个并行异步操作<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">Promise.<span class="keyword">all</span> = <span class="function"><span class="keyword">function</span> <span class="params">([p1,p2,p3])</span> &#123;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> Promise((<span class="built_in">resolve</span>, reject) =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">let</span> <span class="built_in">values</span> = []</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">let</span> <span class="built_in">count</span> = <span class="number">0</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    [p1,p2,p3].forEach((promise, <span class="built_in">index</span>) =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">      promise.then(value =&gt; &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">        console.<span class="built_in">log</span>(<span class="string">'value:'</span>, value, <span class="string">'index:'</span>, <span class="built_in">index</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">        <span class="built_in">values</span>[<span class="built_in">index</span>] = value</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">        <span class="built_in">count</span>++</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (<span class="built_in">count</span> === [p1,p2,p3].length) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">          <span class="built_in">resolve</span>(<span class="built_in">values</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line">      &#125;, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">  &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure></p>
+<h4 id="Promise-race-1"><a href="#Promise-race-1" class="headerlink" title="Promise.race"></a>Promise.race</h4><p>接收一个promise对象数组为参数 Promise.race 只要有一个promise对象进入 fulfilled 或者 rejected 状态的话，就会继续进行后面的处理<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.race = <span class="function"><span class="keyword">function</span> (<span class="params">[p1,p2,p3]</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">      [p1,p2,p3].forEach(<span class="function">(<span class="params">promise</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">         promise.then(resolve, reject);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">      &#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">  &#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure></p>
+<h4 id="最后完整的代码"><a href="#最后完整的代码" class="headerlink" title="最后完整的代码"></a>最后完整的代码</h4><p>原则上，promise.then(onResolved, onRejected)里的这两个函数需要异步调用，关于这一点，标准里也有说明：</p>
+<blockquote>
+<p>In practice, this requirement ensures that onFulfilled and onRejected execute asynchronously, after the event loop turn in which then is called, and with a fresh stack.</p>
+</blockquote>
+<p>所以我们需要对我们的代码做一点变动，即在四个地方加上setTimeout(fn, 0)</p>
+<p>Tip: 我们这里增加setTimeout，涉及到js执行栈以及js单线程和eventLoop相关的知识，各位对js的执行栈、js单线程、eventLoop不太了解的，可以谷歌查阅下相关资料，后边我有空也会写一篇js执行栈、js的单线程、eventloop的讲解文章。下面的代码中，我也会简单写一些加入setTimeout的原因分析。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">PromiseX</span> (<span class="params">fn</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">const</span> self = <span class="keyword">this</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">    self.status = <span class="string">'pending'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    self.data = <span class="string">''</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">    self.onResolvedQueue = [];</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    self.onRejectedQueue = [];</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">        fn(resolve,reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">        reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">12</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">13</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">14</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">resolve</span> (<span class="params">value</span>) </span>&#123; <span class="comment">//value成功态时接收的终值</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">15</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (value <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">16</span></pre></td><td class="code"><pre><span class="line">            value.then(resolve, reject);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">17</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">return</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">18</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">19</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">20</span></pre></td><td class="code"><pre><span class="line">        <span class="comment">// 为什么resolve 加setTimeout? 见下文</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">21</span></pre></td><td class="code"><pre><span class="line">        setTimeout(<span class="function"><span class="params">()</span>=&gt;</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">22</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">if</span> (selft.status === <span class="string">'pending'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">23</span></pre></td><td class="code"><pre><span class="line">                self.status = <span class="string">'fulfilled'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">24</span></pre></td><td class="code"><pre><span class="line">                self.data = value;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">25</span></pre></td><td class="code"><pre><span class="line">                self.onResolvedQueue.forEach(<span class="function"><span class="params">resolved</span> =&gt;</span> resolved(value));</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">26</span></pre></td><td class="code"><pre><span class="line">            &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">27</span></pre></td><td class="code"><pre><span class="line">        &#125;, <span class="number">0</span>)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">28</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">29</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">30</span></pre></td><td class="code"><pre><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">reject</span> (<span class="params">reason</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">31</span></pre></td><td class="code"><pre><span class="line">        setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">32</span></pre></td><td class="code"><pre><span class="line">            <span class="keyword">if</span> (selft.status === <span class="string">'pending'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">33</span></pre></td><td class="code"><pre><span class="line">                self.status = <span class="string">'rejected'</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">34</span></pre></td><td class="code"><pre><span class="line">                self.data = reason;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">35</span></pre></td><td class="code"><pre><span class="line">                self.onRejectedQueue.forEach(<span class="function"><span class="params">rejected</span> =&gt;</span> rejected(reason));</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">36</span></pre></td><td class="code"><pre><span class="line">            &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">37</span></pre></td><td class="code"><pre><span class="line">        &#125;, <span class="number">0</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">38</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">39</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">40</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">41</span></pre></td><td class="code"><pre><span class="line">PromiesX.prototype.then = <span class="function"><span class="keyword">function</span> (<span class="params">onResolve,onReject</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">42</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">const</span> self = <span class="keyword">this</span>;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">43</span></pre></td><td class="code"><pre><span class="line">    onResolve = <span class="keyword">typeof</span> onResolve === <span class="string">'function'</span> ? onResolve : <span class="function"><span class="params">value</span> =&gt;</span> value;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">44</span></pre></td><td class="code"><pre><span class="line">    onReject = <span class="keyword">typeof</span> onReject === <span class="string">'function'</span> ? onReject : <span class="function"><span class="params">reason</span> =&gt;</span> &#123;<span class="keyword">throw</span> reason&#125;;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">45</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">46</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span>(self.status === <span class="string">'pending'</span>)&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">47</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> PromiseX (<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">48</span></pre></td><td class="code"><pre><span class="line">            <span class="comment">// 因为状态未转变，所以成功与失败的回调都需要推进队列</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">49</span></pre></td><td class="code"><pre><span class="line">            self.onResolvedQueue.push(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">50</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">51</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = onResolve(self.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">52</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">53</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">54</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">55</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">56</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">57</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">58</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">59</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">60</span></pre></td><td class="code"><pre><span class="line">            &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">61</span></pre></td><td class="code"><pre><span class="line">                </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">62</span></pre></td><td class="code"><pre><span class="line">            self.onRejectedQueue.push(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">63</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">64</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = reject(self.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">65</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">66</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">67</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">68</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">69</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">70</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">71</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">72</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">73</span></pre></td><td class="code"><pre><span class="line">            &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">74</span></pre></td><td class="code"><pre><span class="line">                </span></pre></td></tr><tr><td class="gutter"><pre><span class="line">75</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">76</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">77</span></pre></td><td class="code"><pre><span class="line">    <span class="comment">// then里面的fulfilled/rejected状态时 为什么要加setTimeout ?见下文</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">78</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span> (self.status === <span class="string">'fulfilled'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">79</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">80</span></pre></td><td class="code"><pre><span class="line">            setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">81</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">82</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = onResolve(self.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">83</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">84</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">85</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">86</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">87</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">88</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">89</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">90</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">91</span></pre></td><td class="code"><pre><span class="line">            &#125;, <span class="number">0</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">92</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">93</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">94</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">95</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">if</span> (self.status === <span class="string">'fulfilled'</span>) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">96</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">97</span></pre></td><td class="code"><pre><span class="line">            setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">98</span></pre></td><td class="code"><pre><span class="line">                <span class="keyword">try</span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">99</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">const</span> x = reject(self.data);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">100</span></pre></td><td class="code"><pre><span class="line">                    <span class="keyword">if</span> (x <span class="keyword">instanceof</span> PromiseX) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">101</span></pre></td><td class="code"><pre><span class="line">                        x.then(resovle, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">102</span></pre></td><td class="code"><pre><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">103</span></pre></td><td class="code"><pre><span class="line">                        resolve(x)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">104</span></pre></td><td class="code"><pre><span class="line">                    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">105</span></pre></td><td class="code"><pre><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">106</span></pre></td><td class="code"><pre><span class="line">                    reject(e)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">107</span></pre></td><td class="code"><pre><span class="line">                &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">108</span></pre></td><td class="code"><pre><span class="line">            &#125;, <span class="number">0</span>);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">109</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">110</span></pre></td><td class="code"><pre><span class="line">        &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">111</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">112</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">113</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">114</span></pre></td><td class="code"><pre><span class="line"><span class="comment">// catch实际上就是then方法第一个参数传null</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">115</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.prototype.catch = <span class="function"><span class="keyword">function</span> (<span class="params">onRejected</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">116</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.then(<span class="literal">null</span>, onRejected)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">117</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">118</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">119</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.resolve = <span class="function"><span class="keyword">function</span> (<span class="params">reason</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">120</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">121</span></pre></td><td class="code"><pre><span class="line">        resolve(reason)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">122</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">123</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">124</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.reject = <span class="function"><span class="keyword">function</span> (<span class="params">reason</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">125</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve,reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">126</span></pre></td><td class="code"><pre><span class="line">        reject(reason)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">127</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">128</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">129</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all = <span class="function"><span class="keyword">function</span> (<span class="params">[p1,p2,p3]</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">130</span></pre></td><td class="code"><pre><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">131</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">let</span> values = []</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">132</span></pre></td><td class="code"><pre><span class="line">    <span class="keyword">let</span> count = <span class="number">0</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">133</span></pre></td><td class="code"><pre><span class="line">    [p1,p2,p3].forEach(<span class="function">(<span class="params">promise, index</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">134</span></pre></td><td class="code"><pre><span class="line">      promise.then(<span class="function"><span class="params">value</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">135</span></pre></td><td class="code"><pre><span class="line">        <span class="built_in">console</span>.log(<span class="string">'value:'</span>, value, <span class="string">'index:'</span>, index)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">136</span></pre></td><td class="code"><pre><span class="line">        values[index] = value</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">137</span></pre></td><td class="code"><pre><span class="line">        count++</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">138</span></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span> (count === [p1,p2,p3].length) &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">139</span></pre></td><td class="code"><pre><span class="line">          resolve(values)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">140</span></pre></td><td class="code"><pre><span class="line">        &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">141</span></pre></td><td class="code"><pre><span class="line">      &#125;, reject)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">142</span></pre></td><td class="code"><pre><span class="line">    &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">143</span></pre></td><td class="code"><pre><span class="line">  &#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">144</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">145</span></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.race = <span class="function"><span class="keyword">function</span> (<span class="params">[p1,p2,p3]</span>) </span>&#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">146</span></pre></td><td class="code"><pre><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">147</span></pre></td><td class="code"><pre><span class="line">      [p1,p2,p3].forEach(<span class="function">(<span class="params">promise</span>) =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">148</span></pre></td><td class="code"><pre><span class="line">         promise.then(resolve, reject);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">149</span></pre></td><td class="code"><pre><span class="line">      &#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">150</span></pre></td><td class="code"><pre><span class="line">  &#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">151</span></pre></td><td class="code"><pre><span class="line">&#125;</span></pre></td></tr></table></figure>
+<h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><ul>
+<li><h4 id="为什么构造函数中-self-onResolvedQueue-和-self-onRejectedQueue-要用数组-？"><a href="#为什么构造函数中-self-onResolvedQueue-和-self-onRejectedQueue-要用数组-？" class="headerlink" title="为什么构造函数中 self.onResolvedQueue 和 self.onRejectedQueue 要用数组 ？"></a>为什么构造函数中 self.onResolvedQueue 和 self.onRejectedQueue 要用数组 ？</h4></li>
+</ul>
+<p>当下面这样非链式调用的时候会出现多个回调的情况<br><figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">const promise1 = <span class="keyword">new</span> Promise(<span class="function"><span class="params">(resolve,reject)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    ...</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">&#125;);</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">promise1.<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line"></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">9</span></pre></td><td class="code"><pre><span class="line">promise1.<span class="keyword">then</span>(<span class="function"><span class="params">(value)</span> =&gt;</span> &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">10</span></pre></td><td class="code"><pre><span class="line">    <span class="built_in">console</span>.log(value)</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">11</span></pre></td><td class="code"><pre><span class="line">&#125;)</span></pre></td></tr></table></figure></p>
+<ul>
+<li><h4 id="为什么resolve-加setTimeout"><a href="#为什么resolve-加setTimeout" class="headerlink" title="为什么resolve 加setTimeout?"></a>为什么resolve 加setTimeout?</h4></li>
+</ul>
+<p>原因：</p>
+<ol>
+<li><p>2.2.4规范 onFulfilled 和 onRejected 只允许在 execution context 栈仅包含平台代码时运行.</p>
+</li>
+<li><p>这里的平台代码指的是引擎、环境以及 promise 的实施代码。实践中要确保 onFulfilled 和 onRejected 方法异步执行，且应该在 then 方法被调用的那一轮事件循环之后的新执行栈中执行。</p>
+</li>
+</ol>
+<ul>
+<li><h4 id="then里面的FULFILLED-REJECTED状态时-为什么要加setTimeout"><a href="#then里面的FULFILLED-REJECTED状态时-为什么要加setTimeout" class="headerlink" title="then里面的FULFILLED/REJECTED状态时 为什么要加setTimeout ?"></a>then里面的FULFILLED/REJECTED状态时 为什么要加setTimeout ?</h4></li>
+</ul>
+<p>原因:</p>
+<ol>
+<li><p>其一 2.2.4规范 要确保 onFulfilled 和 onRejected 方法异步执行(且应该在 then 方法被调用的那一轮事件循环之后的新执行栈中执行) 所以要在resolve里加上setTimeout</p>
+</li>
+<li><p>其二 2.2.6规范 对于一个promise，它的then方法可以调用多次.（当在其他程序中多次调用同一个promise的then时 由于之前状态已经为fulfilled/rejected状态，则会走的下面逻辑),所以要确保为fulfilled/rejected状态后 也要异步执行onFulfilled/onRejected</p>
+</li>
+<li><p>其三 2.2.6规范 也是resolve函数里加setTimeout的原因总之都是 让then方法异步执行 也就是确保onFulfilled/onRejected异步执行</p>
+</li>
+</ol>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="https://es6.ruanyifeng.com/#docs/promise" target="_blank" rel="noopener">ECMAScript 6 入门</a></li>
+<li><a href="https://juejin.im/post/5aa7868b6fb9a028dd4de672" target="_blank" rel="noopener">Promise原理讲解 &amp;&amp; 实现一个Promise对象 (遵循Promise/A+规范)</a></li>
+<li><a href="https://juejin.im/post/5d59757f6fb9a06ae76405c6" target="_blank" rel="noopener">从零一步一步实现一个完整版的Promise</a></li>
+</ul>
+
+                
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2020/02/05/git-configure-multiple-users/" data-toggle="tooltip" data-placement="top" title="git 按目录配置多个用户">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2019/12/12/js-sort/" data-toggle="tooltip" data-placement="top" title="主流排序算法概览">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <div class="comment_notes_blank"></div>
+
+                <!-- tip start -->
+                
+                <div class="visitor_notice">
+                    <img 
+                        src="/img/notice.png" 
+                        alt="notice"
+                        title="notice"/>
+                    <p class="notice">
+                        欢迎访问 <a href="https://xiaopf.github.io/" target="xiaopf">xiaopf</a> 的博客, 若有问题或者有好的建议欢迎留言，笔者看到之后会及时回复。 评论点赞需要github账号登录，如果没有账号的话请点击 <a href="https://github.com" target="view_window" > github </a> 注册， 谢谢 !
+                    </p>
+                </div>
+                <div class="comment_notes">
+                    <p>
+                        If you like this blog or find it useful for you, you are welcome to comment on it. 
+                        You are also welcome to share this blog, so that more people can participate in it.
+                        If the images used in the blog infringe your copyright, please contact the author to delete them. Thank you !
+                    </p>
+                </div>
+                
+                <!-- tip end -->
+
+                <!--分享-->
+                
+                <!--分享-->
+
+                <!-- require APlayer start --><!--
+                
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.css">
+                <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/meting@1.2/dist/Meting.min.js"></script>
+
+                <div class="aplayer"
+                    data-id=""
+                    data-server=""
+                    data-type=""
+                    data-fixed="" >
+                </div>
+                -->
+                <!-- require APlayer end -->
+
+                <!-- gitment start -->
+                
+                <hr>
+                <div id="blog_comments"></div>
+
+<!--
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+-->
+<!--
+<link rel="stylesheet" href="/css/gitment.css">
+<script type="text/javascript" src="/js/gitment.js"></script>
+-->
+
+<script src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/gitment.browser.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/default.css"/>
+
+<!--
+<link rel="stylesheet" href="https://billts.site/extra_css/gitment.css">
+<script src="https://billts.site/js/gitment.js"></script>
+-->
+
+<script>
+const myTheme = {
+  render(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'gitment-container gitment-root-container'
+    
+     // your custom component
+    container.appendChild(instance.renderSomething(state, instance))
+    
+    container.appendChild(instance.renderHeader(state, instance))
+    container.appendChild(instance.renderComments(state, instance))
+    container.appendChild(instance.renderEditor(state, instance))
+    //container.appendChild(instance.renderFooter(state, instance))
+    return container
+  },
+  renderSomething(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'hello_visitor'
+    if (state.user.login) {
+      container.innerText = `Hello ${state.user.login}, Welcome to comment system`
+    }
+    return container
+  }
+}
+
+
+const gitment = new Gitment({
+    id: 'Tue Dec 17 2019 17:37:33 GMT+0800', // optional
+    owner: "xiaopf",
+    repo: "xiaopf.github.io",
+    oauth: {
+      client_id: "cdef4a51db6a777a079b",
+      client_secret: "7a1ff9334134ea02a901d0da92e6ee283068d19a",
+    },
+    theme: myTheme,
+    // ...
+    // For more available options, check out the documentation below
+  })
+  
+  gitment.render('blog_comments')
+  // or
+  // gitment.render(document.getElementById('comments'))
+  // or
+  // document.body.appendChild(gitment.render())
+
+  setTimeout(() => {
+      let loginBtn = document.querySelector('.gitment-editor-login-link');
+      if(!loginBtn){
+        return false;
+      }
+      loginBtn.addEventListener('click',(e) => {
+        window.localStorage.setItem('loginAnchor',1)
+      })
+  }, 2000);
+  const loginAnchor = window.localStorage.getItem('loginAnchor')
+  if(loginAnchor === '1'){
+      const container = document.createElement('a');
+      const e = document.createEvent("MouseEvents");   
+      e.initEvent("click", true, true);
+      container.href="#footer";
+      container.dispatchEvent(e);
+      window.localStorage.setItem('loginAnchor',0)
+  }
+</script>
+                
+                <!-- gitment end -->
+
+                <!-- 来必力City版安装代码 -->
+                
+                <!-- City版安装代码已完成 -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#ES6-Promise-总结并实现一个Promise"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">ES6 Promise 总结并实现一个Promise</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#Promise使用总结"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">Promise使用总结</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-的含义"><span class="toc-nav-number">1.1.1.</span> <span class="toc-nav-text">Promise 的含义</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-就是一个状态机"><span class="toc-nav-number">1.1.2.</span> <span class="toc-nav-text">Promise 就是一个状态机</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#基本用法"><span class="toc-nav-number">1.1.3.</span> <span class="toc-nav-text">基本用法</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-prototype-then"><span class="toc-nav-number">1.1.4.</span> <span class="toc-nav-text">Promise.prototype.then()</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-all"><span class="toc-nav-number">1.1.5.</span> <span class="toc-nav-text">Promise.all()</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-race"><span class="toc-nav-number">1.1.6.</span> <span class="toc-nav-text">Promise.race()</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-allSettled"><span class="toc-nav-number">1.1.7.</span> <span class="toc-nav-text">Promise.allSettled()</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-resolve"><span class="toc-nav-number">1.1.8.</span> <span class="toc-nav-text">Promise.resolve()</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-reject"><span class="toc-nav-number">1.1.9.</span> <span class="toc-nav-text">Promise.reject()</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#实现一个Promise"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">实现一个Promise</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise的构造函数"><span class="toc-nav-number">1.2.1.</span> <span class="toc-nav-text">Promise的构造函数</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#resolve-reject-函数实现"><span class="toc-nav-number">1.2.2.</span> <span class="toc-nav-text">resolve reject 函数实现</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#then-方法"><span class="toc-nav-number">1.2.3.</span> <span class="toc-nav-text">then 方法</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#穿透"><span class="toc-nav-number">1.2.4.</span> <span class="toc-nav-text">穿透</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#其他Promise方法"><span class="toc-nav-number">1.2.5.</span> <span class="toc-nav-text">其他Promise方法</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-resolve-1"><span class="toc-nav-number">1.2.6.</span> <span class="toc-nav-text">Promise.resolve</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-rejected"><span class="toc-nav-number">1.2.7.</span> <span class="toc-nav-text">Promise.rejected</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-all-1"><span class="toc-nav-number">1.2.8.</span> <span class="toc-nav-text">Promise.all</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#Promise-race-1"><span class="toc-nav-number">1.2.9.</span> <span class="toc-nav-text">Promise.race</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#最后完整的代码"><span class="toc-nav-number">1.2.10.</span> <span class="toc-nav-text">最后完整的代码</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#问题"><span class="toc-nav-number">1.2.11.</span> <span class="toc-nav-text">问题</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#为什么构造函数中-self-onResolvedQueue-和-self-onRejectedQueue-要用数组-？"><span class="toc-nav-number">1.2.12.</span> <span class="toc-nav-text">为什么构造函数中 self.onResolvedQueue 和 self.onRejectedQueue 要用数组 ？</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#为什么resolve-加setTimeout"><span class="toc-nav-number">1.2.13.</span> <span class="toc-nav-text">为什么resolve 加setTimeout?</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#then里面的FULFILLED-REJECTED状态时-为什么要加setTimeout"><span class="toc-nav-number">1.2.14.</span> <span class="toc-nav-text">then里面的FULFILLED/REJECTED状态时 为什么要加setTimeout ?</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link" href="#参考"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">参考</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#javascript" title="javascript">javascript</a>
+                        
+                          <a class="tag" href="/tags/#基础" title="基础">基础</a>
+                        
+                          <a class="tag" href="/tags/#ES6" title="ES6">ES6</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://xiaopf.github.io" target="_blank">xiaopf&#39;s Blog</a></li>
+                    
+                        <li><a href="https://github.com/xiaopf" target="_blank">xiaopf&#39;s Github</a></li>
+                    
+                        <li><a href="#" target="_blank">Other</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<!-- star 模式通过时间控制 -->
+
+<style  type="text/css">
+    .notice {
+        color:rgba(51,51,51,0.9);
+        margin:0px;
+        padding:0px;
+    }
+
+    .visitor_notice a {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+
+    .stars .notice {
+        color:white;
+        margin:0px;
+        padding:0px;
+    }
+
+    .stars .visitor_notice a {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .stars .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+</style>
+
+<style  type="text/css">
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+
+        .comment_notes_blank {
+            height:100px;
+        }
+        
+        .comment_notes {
+            color:rgba(51,51,51,0.9);
+            text-align:left;
+            font-style:italic;
+        }
+
+        .visitor_notice {
+            border:1px solid rgba(209,216,220,0.9);
+            padding:20px 20px 20px 20px;
+            border-radius:10px;
+        }
+
+        .visitor_notice img{
+            height:40px;
+            width:40px;
+            float:left;
+            position:relative;
+            margin:0px 10px 0px 0px;
+            padding:0px;
+            top:0px;
+            left:0px;
+        }
+    }
+
+    .comment_notes_blank {
+        height:100px;
+    }
+    
+    .comment_notes {
+        color:rgba(51,51,51,0.9);
+        text-align:left;
+        font-style:italic;
+    }
+
+    .visitor_notice {
+        border:1px solid rgba(209,216,220,0.9);
+        padding:20px 20px 20px 20px;
+        border-radius:10px;
+    }
+
+    .visitor_notice img{
+        height:40px;
+        width:40px;
+        float:left;
+        position:relative;
+        margin:0px 10px 0px 0px;
+        padding:0px;
+        top:0px;
+        left:0px;
+    }
+
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/xiaopf">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/perfect_shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.instagram.com/perfect__shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/pf-xiao">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; xiaopf 2020 
+                    <br>
+                    Powered by 
+                    <a href="https://github.com/dusign/hexo-theme-snail" target="_blank" rel="noopener">
+                        <i>hexo-theme-snail</i>
+                    </a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0"
+                        width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=dusign&repo=hexo-theme-snail&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+<!-- Search -->
+<script src="/js/search.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://xiaopf.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-154429678-1';
+    var _gaDomain = 'https://xiaopf.github.io/';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Search -->
+
+    <script type="text/javascript">      
+        var search_path = "search.xml";
+        if (search_path.length == 0) {
+            search_path = "search.xml";
+        }
+    var path = "/" + search_path;
+    searchFunc(path, 'local-search-input', 'local-search-result');
+    </script>
+
+
+<!-- busuanzi -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+
+    
+        <!-- background effects start -->
+        
+
+        
+            <script type="text/javascript" src="/js/mouse-click.js" content='[&#34;🌱&#34;,&#34;just do it&#34;,&#34;🌾&#34;,&#34;🍀&#34;,&#34;don&#39;t give up&#34;,&#34;🍂&#34;,&#34;🌻&#34;,&#34;try it again&#34;,&#34;🍃&#34;,&#34;never say die&#34;,&#34;🌵&#34;,&#34;🌿&#34;,&#34;🌴&#34;]' color='[&#34;rgb(121,93,179)&#34; ,&#34;rgb(76,180,231)&#34; ,&#34;rgb(184,90,154)&#34; ,&#34;rgb(157,211,250)&#34; ,&#34;rgb(255,0,0)&#34; ,&#34;rgb(242,153,29)&#34; ,&#34;rgb(23,204,16)&#34; ,&#34;rgb(222,0,0)&#34; ,&#34;rgb(22,36,92)&#34; ,&#34;rgb(127,24,116)&#34; ,&#34;rgb(119,195,79)&#34; ,&#34;rgb(4,77,34)&#34; ,&#34;rgb(122,2,60)&#34;]'></script>
+        
+
+        <!-- background effects end -->
+    
+
+</body>
+
+</html>

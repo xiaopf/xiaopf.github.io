@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="baidu-site-verification" content="093lY4ziMu" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="description" content="记录生活，记录知识">
+    <meta name="keyword"  content="javascript, frontEnd">
+    <link rel="shortcut icon" href="/img/header.jpg ">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <!--<link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>-->
+    <title>
+        
+          Hexo快速搭建个人博客，并发布到github pages - xiaopf
+        
+    </title>
+
+    <link rel="canonical" href="https://xiaopf.github.io/2019/12/06/hexo-build-github-pages/">
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+
+    <!-- Custom CSS --> 
+    <link rel="stylesheet" href="/css/xiaopf.css">
+    <!-- background effects end -->
+    
+    <!-- Pygments Highlight CSS -->
+    <link rel="stylesheet" href="/css/highlight.css">
+
+    <link rel="stylesheet" href="/css/widget.css">
+
+    <link rel="stylesheet" href="/css/rocket.css">
+
+    <link rel="stylesheet" href="/css/signature.css">
+
+    <link rel="stylesheet" href="/css/toc.css">
+
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/fonts.googleapis.css">
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <!--<link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+
+    <link rel="stylesheet" href="/css/font-awesome.css">
+
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+</head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+
+    
+        <!-- background effects start -->
+        <!-- show star -->
+        <canvas id="canv" width="1440" height="768"></canvas>
+<script>
+  var num = 200;
+  var w = window.innerWidth;
+  var h = window.innerHeight;
+  var max = 100;
+  var _x = 0;
+  var _y = 0;
+  var _z = 150;
+  var dtr = function(d) {
+    return d * Math.PI / 180;
+  };
+
+  var rnd = function() {
+    return Math.sin(Math.floor(Math.random() * 360) * Math.PI / 180);
+  };
+  var dist = function(p1, p2, p3) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2) + Math.pow(p2.z - p1.z, 2));
+  };
+
+  var cam = {
+    obj: {
+      x: _x,
+      y: _y,
+      z: _z
+    },
+    dest: {
+      x: 0,
+      y: 0,
+      z: 1
+    },
+    dist: {
+      x: 0,
+      y: 0,
+      z: 200
+    },
+    ang: {
+      cplane: 0,
+      splane: 0,
+      ctheta: 0,
+      stheta: 0
+    },
+    zoom: 1,
+    disp: {
+      x: w / 2,
+      y: h / 2,
+      z: 0
+    },
+    upd: function() {
+      cam.dist.x = cam.dest.x - cam.obj.x;
+      cam.dist.y = cam.dest.y - cam.obj.y;
+      cam.dist.z = cam.dest.z - cam.obj.z;
+      cam.ang.cplane = -cam.dist.z / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.splane = cam.dist.x / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z);
+      cam.ang.ctheta = Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.z * cam.dist.z) / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+      cam.ang.stheta = -cam.dist.y / Math.sqrt(cam.dist.x * cam.dist.x + cam.dist.y * cam.dist.y + cam.dist.z * cam.dist.z);
+    }
+  };
+
+  var trans = {
+    parts: {
+      sz: function(p, sz) {
+        return {
+          x: p.x * sz.x,
+          y: p.y * sz.y,
+          z: p.z * sz.z
+        };
+      },
+      rot: {
+        x: function(p, rot) {
+          return {
+            x: p.x,
+            y: p.y * Math.cos(dtr(rot.x)) - p.z * Math.sin(dtr(rot.x)),
+            z: p.y * Math.sin(dtr(rot.x)) + p.z * Math.cos(dtr(rot.x))
+          };
+        },
+        y: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.y)) + p.z * Math.sin(dtr(rot.y)),
+            y: p.y,
+            z: -p.x * Math.sin(dtr(rot.y)) + p.z * Math.cos(dtr(rot.y))
+          };
+        },
+        z: function(p, rot) {
+          return {
+            x: p.x * Math.cos(dtr(rot.z)) - p.y * Math.sin(dtr(rot.z)),
+            y: p.x * Math.sin(dtr(rot.z)) + p.y * Math.cos(dtr(rot.z)),
+            z: p.z
+          };
+        }
+      },
+      pos: function(p, pos) {
+        return {
+          x: p.x + pos.x,
+          y: p.y + pos.y,
+          z: p.z + pos.z
+        };
+      }
+    },
+    pov: {
+      plane: function(p) {
+        return {
+          x: p.x * cam.ang.cplane + p.z * cam.ang.splane,
+          y: p.y,
+          z: p.x * -cam.ang.splane + p.z * cam.ang.cplane
+        };
+      },
+      theta: function(p) {
+        return {
+          x: p.x,
+          y: p.y * cam.ang.ctheta - p.z * cam.ang.stheta,
+          z: p.y * cam.ang.stheta + p.z * cam.ang.ctheta
+        };
+      },
+      set: function(p) {
+        return {
+          x: p.x - cam.obj.x,
+          y: p.y - cam.obj.y,
+          z: p.z - cam.obj.z
+        };
+      }
+    },
+    persp: function(p) {
+      return {
+        x: p.x * cam.dist.z / p.z * cam.zoom,
+        y: p.y * cam.dist.z / p.z * cam.zoom,
+        z: p.z * cam.zoom,
+        p: cam.dist.z / p.z
+      };
+    },
+    disp: function(p, disp) {
+      return {
+        x: p.x + disp.x,
+        y: -p.y + disp.y,
+        z: p.z + disp.z,
+        p: p.p
+      };
+    },
+    steps: function(_obj_, sz, rot, pos, disp) {
+      var _args = trans.parts.sz(_obj_, sz);
+      _args = trans.parts.rot.x(_args, rot);
+      _args = trans.parts.rot.y(_args, rot);
+      _args = trans.parts.rot.z(_args, rot);
+      _args = trans.parts.pos(_args, pos);
+      _args = trans.pov.plane(_args);
+      _args = trans.pov.theta(_args);
+      _args = trans.pov.set(_args);
+      _args = trans.persp(_args);
+      _args = trans.disp(_args, disp);
+      return _args;
+    }
+  };
+  const canvasObj = document.getElementById("canv");
+  (function() {
+    "use strict";
+    // 移动端不开启悬浮的星星
+    const UA = window.navigator.userAgent;
+    if(UA.indexOf('Android') >= 0 || UA.indexOf('iPhone') >= 0){
+        return false;
+    }
+    // 控制star显示隐藏
+    const mode = window.localStorage.getItem('mode');
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      canvasObj.style.display = "none";
+      document.body.style.backgroundColor = "transparent";
+      return false;
+    } else {
+      canvasObj.style.display = "block";
+      document.body.className = "stars"
+      document.body.style.backgroundColor = "rgba(26,26,26,1)";
+      document.body.style.color = "#fff";
+      setTimeout(() => {
+        const gitmentContainer = document.getElementsByClassName("gitment-container");
+        const gitmentEditorPreview = document.getElementsByClassName("gitment-editor-preview");
+        const gitmentHeartIcon = document.getElementsByClassName("gitment-heart-icon");
+        if(gitmentContainer.length > 0 && gitmentEditorPreview.length > 0 && gitmentHeartIcon.length > 0) {
+            gitmentContainer[0].style.color = "#fff";
+            gitmentContainer[1].style.color = "#fff";
+            gitmentEditorPreview[0].style.backgroundColor = "#fff";
+            gitmentHeartIcon[0].style.fill = "#fff";
+        }
+      }, 2000);
+    }
+
+    var threeD = function(param) {
+      this.transIn = {};
+      this.transOut = {};
+      this.transIn.vtx = (param.vtx);
+      this.transIn.sz = (param.sz);
+      this.transIn.rot = (param.rot);
+      this.transIn.pos = (param.pos);
+    };
+
+    threeD.prototype.vupd = function() {
+      this.transOut = trans.steps(
+
+        this.transIn.vtx,
+        this.transIn.sz,
+        this.transIn.rot,
+        this.transIn.pos,
+        cam.disp
+      );
+    };
+
+    var Build = function() {
+      this.vel = 0.04;
+      this.lim = 360;
+      this.diff = 200;
+      this.initPos = 100;
+      this.toX = _x;
+      this.toY = _y;
+      this.go();
+    };
+
+    Build.prototype.go = function() {
+      this.canvas = document.getElementById("canv");
+      this.canvas.width = window.innerWidth;
+      this.canvas.height = window.innerHeight;
+      this.$ = canv.getContext("2d");
+      this.$.globalCompositeOperation = 'source-over';
+      this.varr = [];
+      this.dist = [];
+      this.calc = [];
+
+      for (var i = 0, len = num; i < len; i++) {
+        this.add();
+      }
+
+      this.rotObj = {
+        x: 0,
+        y: 0,
+        z: 0
+      };
+      this.objSz = {
+        x: w / 5,
+        y: h / 5,
+        z: w / 5
+      };
+    };
+
+    Build.prototype.add = function() {
+      this.varr.push(new threeD({
+        vtx: {
+          x: rnd(),
+          y: rnd(),
+          z: rnd()
+        },
+        sz: {
+          x: 0,
+          y: 0,
+          z: 0
+        },
+        rot: {
+          x: 20,
+          y: -20,
+          z: 0
+        },
+        pos: {
+          x: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          y: this.diff * Math.sin(360 * Math.random() * Math.PI / 180),
+          z: this.diff * Math.sin(360 * Math.random() * Math.PI / 180)
+        }
+      }));
+      this.calc.push({
+        x: 360 * Math.random(),
+        y: 360 * Math.random(),
+        z: 360 * Math.random()
+      });
+    };
+
+    Build.prototype.upd = function() {
+      cam.obj.x += (this.toX - cam.obj.x) * 0.05;
+      cam.obj.y += (this.toY - cam.obj.y) * 0.05;
+    };
+
+    Build.prototype.draw = function() {
+      this.$.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      cam.upd();
+      this.rotObj.x += 0.1;
+      this.rotObj.y += 0.1;
+      this.rotObj.z += 0.1;
+
+      for (var i = 0; i < this.varr.length; i++) {
+        for (var val in this.calc[i]) {
+          if (this.calc[i].hasOwnProperty(val)) {
+            this.calc[i][val] += this.vel;
+            if (this.calc[i][val] > this.lim) this.calc[i][val] = 0;
+          }
+        }
+
+        this.varr[i].transIn.pos = {
+          x: this.diff * Math.cos(this.calc[i].x * Math.PI / 180),
+          y: this.diff * Math.sin(this.calc[i].y * Math.PI / 180),
+          z: this.diff * Math.sin(this.calc[i].z * Math.PI / 180)
+        };
+        this.varr[i].transIn.rot = this.rotObj;
+        this.varr[i].transIn.sz = this.objSz;
+        this.varr[i].vupd();
+        if (this.varr[i].transOut.p < 0) continue;
+        var g = this.$.createRadialGradient(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p, this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2);
+        this.$.globalCompositeOperation = 'lighter';
+        g.addColorStop(0, 'hsla(255, 255%, 255%, 1)');
+        g.addColorStop(.5, 'hsla(' + (i + 2) + ',85%, 40%,1)');
+        g.addColorStop(1, 'hsla(' + (i) + ',85%, 40%,.5)');
+        this.$.fillStyle = g;
+        this.$.beginPath();
+        this.$.arc(this.varr[i].transOut.x, this.varr[i].transOut.y, this.varr[i].transOut.p * 2, 0, Math.PI * 2, false);
+        this.$.fill();
+        this.$.closePath();
+      }
+    };
+    Build.prototype.anim = function() {
+      window.requestAnimationFrame = (function() {
+        return window.requestAnimationFrame ||
+          function(callback, element) {
+            window.setTimeout(callback, 1000 / 60);
+          };
+      })();
+      var anim = function() {
+        this.upd();
+        this.draw();
+        window.requestAnimationFrame(anim);
+      }.bind(this);
+      window.requestAnimationFrame(anim);
+    };
+
+    Build.prototype.run = function() {
+      this.anim();
+
+      window.addEventListener('mousemove', function(e) {
+        this.toX = (e.clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        this.toX = (e.touches[0].clientX - this.canvas.width / 2) /-80;
+        this.toY = (e.touches[0].clientY - this.canvas.height / 2) /80;
+      }.bind(this));
+      window.addEventListener('mousedown', function(e) {
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+      window.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        for (var i = 0; i < 100; i++) {
+          this.add();
+        }
+      }.bind(this));
+    };
+    var app = new Build();
+    app.run();
+  })();
+  
+  window.addEventListener('resize', function() {
+    canvasObj.width = w = window.innerWidth;
+    canvasObj.height = h = window.innerHeight;
+  }, false);
+  
+</script>
+
+<style  type="text/css">
+  body{
+    text-align: -webkit-auto;
+  }
+  .stars div,.stars p,.stars ul,.stars li{
+    color: #fff;
+    filter:alpha(Opacity=90);
+    -moz-opacity:0.98;
+    opacity: 0.98; 
+  }
+  body hr{
+    background-color: rgba(255,255,255,0.4);
+    height: 1px;
+    border: none;
+  }
+  #cnblogs_post_body p img{
+    max-width: 100%;
+  }
+  #container {
+    width: 90%;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0);
+  }
+  #canv{
+    position: fixed;
+    display: none;
+  }
+  .cnblogs_code {
+    color: #f8f8f8;
+    background-color: rgba(245, 245, 245, 0);
+    border: 1px solid #cccccc6e;
+  }
+  .cnblogs_code span{
+    color: #ccc!important;
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code div {
+    background-color: rgba(0, 0, 0, 0);
+  }
+  .cnblogs_code_toolbar a:link{
+    background-color: #f5f5f500!important;
+  }
+  .cnblogs_code_toolbar a:link img{
+    background-color:#f5f5f500!important;
+  }
+  div.commentform textarea.comment_textarea {
+    background-color: #f0f8ff00;
+  }
+</style>
+        <!-- background effects end -->
+    
+
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('defaultHeaderBg.jpg')
+            /*post*/
+        
+    }
+    
+    #signature{
+        background-image: url('/img/signature/Just-do-it-white.png');
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#hexo-theme-snail" title="hexo-theme-snail">hexo-theme-snail</a>
+                            
+                              <a class="tag" href="/tags/#snail" title="snail">snail</a>
+                            
+                              <a class="tag" href="/tags/#hexo" title="hexo">hexo</a>
+                            
+                        </div>
+                        <h1>Hexo快速搭建个人博客，并发布到github pages</h1>
+                        <h2 class="subheading">快速搭建hexo个人博客</h2>
+                        <span class="meta">
+                            Posted by xiaopf on
+                            2019-12-06
+                        </span>
+
+                        
+                            <div class="blank_box"></div>
+                            <span class="meta">
+                                Words <span class="post-count">1.2k</span> and
+                                Reading Time <span class="post-count">4</span> Minutes
+                            </span>
+                            <div class="blank_box"></div>
+                            <!-- 不蒜子统计 start -->
+                            <span class="meta">
+                                Viewed <span id="busuanzi_value_page_pv"><i class="fa fa-spinner fa-spin"></i></span> Times
+                            </span>
+                            <!-- 不蒜子统计 end -->
+                        
+
+                    </div>
+                
+
+                </div>
+            </div>
+        </div>      
+    </div>
+    <div class="waveWrapper">
+        <div class="wave wave_before" style="background-image: url('/img/wave-top80.png')"></div>
+        <div class="wave wave_after" style="background-image: url('/img/wave-top80.png')"></div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">xiaopf&#39;s site</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+                    
+
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    <li style="cursor: pointer;">
+                        <p id="changeMode" class="change-mode" title="change mode">
+                            Mode
+                        </p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    const $body   = document.body;
+    const $toggle = document.querySelector('.navbar-toggle');
+    const $navbar = document.querySelector('#huxblog_navbar');
+    const $collapse = document.querySelector('.navbar-collapse');
+    const $changeMode = document.querySelector('#changeMode');
+    const mode = window.localStorage.getItem('mode');
+    $changeMode.addEventListener('click', handleChangeMode)
+    $toggle.addEventListener('click', handleMagic)
+    
+    // 时间处于7-18点之间，且localStorage中没有mode的情况，或者有mode，mode是 light的情况使用 light mode
+    if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+      $changeMode.innerHTML='STAR'
+    } else {
+      $changeMode.innerHTML='LIGHT'
+    }
+    
+    function handleChangeMode(e){
+        if((new Date().getHours() >= 7 && new Date().getHours() < 18 && !mode) || (mode && mode === 'light')){
+            window.localStorage.setItem('mode','star');
+        }else{
+            window.localStorage.setItem('mode','light');
+        }
+        window.location.reload()
+    }
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <h2 id="Hexo快速搭建个人博客，并发布到github-pages"><a href="#Hexo快速搭建个人博客，并发布到github-pages" class="headerlink" title="Hexo快速搭建个人博客，并发布到github pages"></a>Hexo快速搭建个人博客，并发布到github pages</h2><p>Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown（或其他渲染引擎）解析文章，在几秒内，即可利用靓丽的主题生成静态网页。</p>
+<h4 id="一、全局安装-Git-，Nodejs-，-Hexo"><a href="#一、全局安装-Git-，Nodejs-，-Hexo" class="headerlink" title="一、全局安装 Git ，Nodejs ， Hexo"></a>一、全局安装 Git ，Nodejs ， Hexo</h4><h5 id="git及nodejs安装教程-忽略"><a href="#git及nodejs安装教程-忽略" class="headerlink" title="git及nodejs安装教程 忽略"></a>git及nodejs安装教程 忽略</h5><h5 id="hexo安装"><a href="#hexo安装" class="headerlink" title="hexo安装"></a>hexo安装</h5><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ npm install -g hexo-<span class="keyword">cli</span></span></pre></td></tr></table></figure>
+<p>安装完成后在命令行输入 hexo 看一下命令是否存在，如果不存在，可能是需要配置一下环境变量。</p>
+<h4 id="二、开始建站"><a href="#二、开始建站" class="headerlink" title="二、开始建站"></a>二、开始建站</h4><p>安装完成 hexo 之后执行下面的命令<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> hexo init &lt;folder&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> <span class="built_in">cd</span> &lt;folder&gt;</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> npm install</span></span></pre></td></tr></table></figure><br>项目的目录结构如下</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">.</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">├── <span class="variable">_config</span>.yml</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">├── package.json</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">├── scaffolds</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">├── source</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line">|   ├── <span class="variable">_drafts</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line">|   └── <span class="variable">_posts</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">8</span></pre></td><td class="code"><pre><span class="line">└── themes</span></pre></td></tr></table></figure>
+<h5 id="config-yml"><a href="#config-yml" class="headerlink" title="_config.yml"></a>_config.yml</h5><p>网站的 <a href="https://hexo.io/zh-cn/docs/configuration" target="_blank" rel="noopener">配置</a> 信息，您可以在此配置大部分的参数。</p>
+<p>如果后面要发布到github上 要填写 url 这个参数为github pages 地址</p>
+<h5 id="package-json"><a href="#package-json" class="headerlink" title="package.json"></a>package.json</h5><p>应用程序的信息。</p>
+<h5 id="scaffolds"><a href="#scaffolds" class="headerlink" title="scaffolds"></a>scaffolds</h5><p>模版 文件夹。当您新建文章时，Hexo 会根据 scaffold 来建立文件。</p>
+<p>Hexo的模板是指在新建的文章文件中默认填充的内容。例如，如果您修改scaffold/post.md中的Front-matter内容，那么每次新建一篇文章时都会包含这个修改。</p>
+<h5 id="source"><a href="#source" class="headerlink" title="source"></a>source</h5><p>资源文件夹是存放用户资源的地方。除 <em>posts 文件夹之外，开头命名为 </em> (下划线)的文件 / 文件夹和隐藏的文件将会被忽略。Markdown 和 HTML 文件会被解析并放到 public 文件夹，而其他文件会被拷贝过去。</p>
+<h5 id="themes"><a href="#themes" class="headerlink" title="themes"></a>themes</h5><p>主题 文件夹。Hexo 会根据主题来生成静态页面。</p>
+<h4 id="三、启动项目"><a href="#三、启动项目" class="headerlink" title="三、启动项目"></a>三、启动项目</h4><p>server 指令启动网站项目<br><figure class="highlight axapta"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ hexo <span class="keyword">server</span></span></pre></td></tr></table></figure><br>启动服务器。默认情况下，访问网址为： <a href="http://localhost:4000/。" target="_blank" rel="noopener">http://localhost:4000/。</a></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-p, —port</td>
+<td>重设端口</td>
+</tr>
+<tr>
+<td>-s, —static</td>
+<td>只使用静态文件</td>
+</tr>
+<tr>
+<td>-l, —log</td>
+<td>启动日记记录，使用覆盖记录格式</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>generate 指令生成静态文件</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ hexo <span class="keyword">generate</span> --watch <span class="comment">//参数是监控文件变动自动生成静态文件的</span></span></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-d, —deploy</td>
+<td>文件生成后立即部署网站</td>
+</tr>
+<tr>
+<td>-w, —watch</td>
+<td>监视文件变动</td>
+</tr>
+<tr>
+<td>-b, —bail</td>
+<td>启动日记记录，使用覆盖记录格式</td>
+</tr>
+<tr>
+<td>-f, —force</td>
+<td>生成过程中如果发生任何未处理的异常则抛出异常存在，那么 hexo g 只会重新生成改动的文件。使用该参数的效果接近 hexo clean &amp;&amp; hexo generate</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="四、部署项目"><a href="#四、部署项目" class="headerlink" title="四、部署项目"></a>四、部署项目</h4><p>首先去github上面创建两个仓库，一个仓库存放本项目，叫地址A，另一个项目存放生成的博客静态文件，叫地址B。</p>
+<h5 id="安装-hexo-deployer-git"><a href="#安装-hexo-deployer-git" class="headerlink" title="安装 hexo-deployer-git"></a>安装 hexo-deployer-git</h5><p>首先安装 hexo-deployer-git 后面一键发布到github pages要用<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ npm <span class="keyword">install</span> hexo-deployer-git <span class="comment">--save</span></span></pre></td></tr></table></figure><br>然后修改 _config.yml 文件最下面的 deploy 配置：<br><figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">deploy:</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">  type:</span> git</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">  repo:</span> <span class="params">&lt;repository url&gt;</span> 地址B</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">  branch:</span> [branch]</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">  message:</span> [message]</span></pre></td></tr></table></figure></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>描述</th>
+<th>默认</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>repo</td>
+<td>库（Repository）地址</td>
+<td></td>
+</tr>
+<tr>
+<td>branch</td>
+<td>分支名称</td>
+<td>gh-pages (GitHub) coding-pages (Coding.net) master (others)</td>
+</tr>
+<tr>
+<td>message</td>
+<td>自定义提交信息</td>
+<td>Site updated: now('YYYY-MM-DD HH:mm:ss'))</td>
+</tr>
+<tr>
+<td>token</td>
+<td>Optional token value to authenticate with the repo. Prefix with $ to read token from environment variable    </td>
+</tr>
+</tbody>
+</table>
+</div>
+<h5 id="推送本项目"><a href="#推送本项目" class="headerlink" title="推送本项目"></a>推送本项目</h5><p>把本项目推到地址A上步骤如下<br><figure class="highlight gams"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">$</span> git init <span class="comment">// git初始化</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">$</span> git add . <span class="comment">// 添加所有变动</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">$</span> git commit -m xxxx <span class="comment">// commit 代码</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">$</span> git remote add origin 地址A <span class="comment">// 本地代码与远程仓库关联</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">$</span> git push origin master <span class="comment">// 推到远程仓库</span></span></pre></td></tr></table></figure></p>
+<h5 id="新建一篇文章"><a href="#新建一篇文章" class="headerlink" title="新建一篇文章"></a>新建一篇文章</h5><figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ hexo <span class="keyword">new</span> &lt;<span class="built_in">title</span>&gt;</span></pre></td></tr></table></figure>
+<p>此处新建的时候。title 最好是英文的标题，如果_config.yml配置的路由规则（即permalink）是默认值 :year/:month/:day/:title/ ，那么进入文章后路由就有中文了，有中文使用 gitment 评价系统时，登陆 github 账号会出现 404 问题。</p>
+<h5 id="发布博客"><a href="#发布博客" class="headerlink" title="发布博客"></a>发布博客</h5><p>运行下面的命令<br>清除缓存文件 (db.json) 和已生成的静态文件 (public),并将 public中的博客静态文件推送到地址B上。</p>
+<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ hexo clean <span class="meta">&amp;&amp; hexo deploy</span></span></pre></td></tr></table></figure>
+<p>过一会去 地址B 中的setting 的 GitHub Pages 的网址上去查看发布的博客即可。</p>
+<h4 id="五、切换主题"><a href="#五、切换主题" class="headerlink" title="五、切换主题"></a>五、切换主题</h4><p><a href="https://hexo.io/themes/" target="_blank" rel="noopener">hexo主题</a>网站上面有很多的主题可以选择，找到选中主题的github地址，切换主题具体操作需要看每个主题的ReadMe即可。如果自己要修改东西也可以进入themes目录下去调整相关代码。</p>
+<h4 id="六、引入husky"><a href="#六、引入husky" class="headerlink" title="六、引入husky"></a>六、引入husky</h4><p>由于博客的静态文章和项目的代码是分开两个仓库存放的，所以每次发布文章后，还需要把代码推到仓库中，引入husky就是利用git hooks配置预处理脚本。在项目commit后，直接发布文章，也就是把博客静态文件推送到远程仓库。</p>
+<ol>
+<li>安装husky<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ npm install --<span class="built_in">save</span>-<span class="built_in">dev</span> husky</span></pre></td></tr></table></figure></li>
+<li>package.json中，与“scripts“并列，添加如下内容：<figure class="highlight 1c"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="string">"husky"</span>: &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line">    <span class="string">"hooks"</span>: &#123;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line">        <span class="string">"pre-commit"</span>:<span class="string">"npm run clean &amp;&amp; npm run deploy"</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line">    &#125;</span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line">&#125;,</span></pre></td></tr></table></figure>
+</li>
+</ol>
+<!-- #### 六、引入nodemon
+nodemon用来监视node.js应用程序中的任何更改并自动重启服务,非常适合用在开发环境中。nodemon将监视启动目录中的文件，如果有任何文件更改，nodemon将自动重新启动node应用程序。
+1. 安装nodemon
+<figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line">$ npm install --<span class="built_in">save</span>-<span class="built_in">dev</span> nodemon</span></pre></td></tr></table></figure>
+<ol>
+<li>nodemon配置saf  —&gt;</li>
+</ol>
+<h4 id="六、引入gitment评论"><a href="#六、引入gitment评论" class="headerlink" title="六、引入gitment评论"></a>六、引入gitment评论</h4><p>gitment是基于github的issue来显示评论的一个插件，<a href="https://www.jianshu.com/p/57afa4844aaa" target="_blank" rel="noopener">Gitment评论功能接入踩坑教程</a></p>
+<ol>
+<li>注册 OAuth Application 进入 <a href="https://github.com/settings/applications/new" target="_blank" rel="noopener">https://github.com/settings/applications/new</a> 注册一个application</li>
+<li>注册成功后就可以拿到 Client ID 和 Client Secret</li>
+<li>在根目录中找到 _config.yml文件，修改comment如下,<figure class="highlight dts"><table><tr><td class="gutter"><pre><span class="line">1</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">comment:</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">2</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">  gitment:</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">3</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">    enable:</span> true <span class="comment">// 开启gitment</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">4</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">    owner:</span> xiaopf <span class="comment">// github用户名</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">5</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">    repo:</span> xiaopf.github.io <span class="comment">// 评论存放的仓库，我直接用的博客静态资源存放的仓库了</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">6</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">    client_id:</span> xxxxx <span class="comment">// 上文获得的Client ID</span></span></pre></td></tr><tr><td class="gutter"><pre><span class="line">7</span></pre></td><td class="code"><pre><span class="line"><span class="symbol">    client_secret:</span> xxxx <span class="comment">// 上文获得的Client Secret</span></span></pre></td></tr></table></figure>
+</li>
+</ol>
+
+                
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/2019/12/06/verdaccio-build-npm-repository/" data-toggle="tooltip" data-placement="top" title="verdaccio搭建私有npm仓库，缓存npm公共包">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/2019/11/01/Hexo-Theme-Snail/" data-toggle="tooltip" data-placement="top" title="Hexo-Theme-Snail">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <div class="comment_notes_blank"></div>
+
+                <!-- tip start -->
+                
+                <div class="visitor_notice">
+                    <img 
+                        src="/img/notice.png" 
+                        alt="notice"
+                        title="notice"/>
+                    <p class="notice">
+                        欢迎访问 <a href="https://xiaopf.github.io/" target="xiaopf">xiaopf</a> 的博客, 若有问题或者有好的建议欢迎留言，笔者看到之后会及时回复。 评论点赞需要github账号登录，如果没有账号的话请点击 <a href="https://github.com" target="view_window" > github </a> 注册， 谢谢 !
+                    </p>
+                </div>
+                <div class="comment_notes">
+                    <p>
+                        If you like this blog or find it useful for you, you are welcome to comment on it. 
+                        You are also welcome to share this blog, so that more people can participate in it.
+                        If the images used in the blog infringe your copyright, please contact the author to delete them. Thank you !
+                    </p>
+                </div>
+                
+                <!-- tip end -->
+
+                <!--分享-->
+                
+                <!--分享-->
+
+                <!-- require APlayer start --><!--
+                
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.css">
+                <script src="https://cdn.jsdelivr.net/npm/aplayer@1.10/dist/APlayer.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/meting@1.2/dist/Meting.min.js"></script>
+
+                <div class="aplayer"
+                    data-id=""
+                    data-server=""
+                    data-type=""
+                    data-fixed="" >
+                </div>
+                -->
+                <!-- require APlayer end -->
+
+                <!-- gitment start -->
+                
+                <hr>
+                <div id="blog_comments"></div>
+
+<!--
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+-->
+<!--
+<link rel="stylesheet" href="/css/gitment.css">
+<script type="text/javascript" src="/js/gitment.js"></script>
+-->
+
+<script src="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/gitment.browser.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/theme-next/theme-next-gitment@1/default.css"/>
+
+<!--
+<link rel="stylesheet" href="https://billts.site/extra_css/gitment.css">
+<script src="https://billts.site/js/gitment.js"></script>
+-->
+
+<script>
+const myTheme = {
+  render(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'gitment-container gitment-root-container'
+    
+     // your custom component
+    container.appendChild(instance.renderSomething(state, instance))
+    
+    container.appendChild(instance.renderHeader(state, instance))
+    container.appendChild(instance.renderComments(state, instance))
+    container.appendChild(instance.renderEditor(state, instance))
+    //container.appendChild(instance.renderFooter(state, instance))
+    return container
+  },
+  renderSomething(state, instance) {
+    const container = document.createElement('div')
+    container.lang = "en-US"
+    container.className = 'hello_visitor'
+    if (state.user.login) {
+      container.innerText = `Hello ${state.user.login}, Welcome to comment system`
+    }
+    return container
+  }
+}
+
+
+const gitment = new Gitment({
+    id: 'Fri Dec 06 2019 10:02:12 GMT+0800', // optional
+    owner: "xiaopf",
+    repo: "xiaopf.github.io",
+    oauth: {
+      client_id: "cdef4a51db6a777a079b",
+      client_secret: "7a1ff9334134ea02a901d0da92e6ee283068d19a",
+    },
+    theme: myTheme,
+    // ...
+    // For more available options, check out the documentation below
+  })
+  
+  gitment.render('blog_comments')
+  // or
+  // gitment.render(document.getElementById('comments'))
+  // or
+  // document.body.appendChild(gitment.render())
+
+  setTimeout(() => {
+      let loginBtn = document.querySelector('.gitment-editor-login-link');
+      if(!loginBtn){
+        return false;
+      }
+      loginBtn.addEventListener('click',(e) => {
+        window.localStorage.setItem('loginAnchor',1)
+      })
+  }, 2000);
+  const loginAnchor = window.localStorage.getItem('loginAnchor')
+  if(loginAnchor === '1'){
+      const container = document.createElement('a');
+      const e = document.createEvent("MouseEvents");   
+      e.initEvent("click", true, true);
+      container.href="#footer";
+      container.dispatchEvent(e);
+      window.localStorage.setItem('loginAnchor',0)
+  }
+</script>
+                
+                <!-- gitment end -->
+
+                <!-- 来必力City版安装代码 -->
+                
+                <!-- City版安装代码已完成 -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link" href="#Hexo快速搭建个人博客，并发布到github-pages"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">Hexo快速搭建个人博客，并发布到github pages</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#一、全局安装-Git-，Nodejs-，-Hexo"><span class="toc-nav-number">1.0.1.</span> <span class="toc-nav-text">一、全局安装 Git ，Nodejs ， Hexo</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#git及nodejs安装教程-忽略"><span class="toc-nav-number">1.0.1.1.</span> <span class="toc-nav-text">git及nodejs安装教程 忽略</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#hexo安装"><span class="toc-nav-number">1.0.1.2.</span> <span class="toc-nav-text">hexo安装</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#二、开始建站"><span class="toc-nav-number">1.0.2.</span> <span class="toc-nav-text">二、开始建站</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#config-yml"><span class="toc-nav-number">1.0.2.1.</span> <span class="toc-nav-text">_config.yml</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#package-json"><span class="toc-nav-number">1.0.2.2.</span> <span class="toc-nav-text">package.json</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#scaffolds"><span class="toc-nav-number">1.0.2.3.</span> <span class="toc-nav-text">scaffolds</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#source"><span class="toc-nav-number">1.0.2.4.</span> <span class="toc-nav-text">source</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#themes"><span class="toc-nav-number">1.0.2.5.</span> <span class="toc-nav-text">themes</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#三、启动项目"><span class="toc-nav-number">1.0.3.</span> <span class="toc-nav-text">三、启动项目</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#四、部署项目"><span class="toc-nav-number">1.0.4.</span> <span class="toc-nav-text">四、部署项目</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#安装-hexo-deployer-git"><span class="toc-nav-number">1.0.4.1.</span> <span class="toc-nav-text">安装 hexo-deployer-git</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#推送本项目"><span class="toc-nav-number">1.0.4.2.</span> <span class="toc-nav-text">推送本项目</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#新建一篇文章"><span class="toc-nav-number">1.0.4.3.</span> <span class="toc-nav-text">新建一篇文章</span></a></li><li class="toc-nav-item toc-nav-level-5"><a class="toc-nav-link" href="#发布博客"><span class="toc-nav-number">1.0.4.4.</span> <span class="toc-nav-text">发布博客</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#五、切换主题"><span class="toc-nav-number">1.0.5.</span> <span class="toc-nav-text">五、切换主题</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link" href="#六、引入husky"><span class="toc-nav-number">1.0.6.</span> <span class="toc-nav-text">六、引入husky</span></a></li></ol></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#hexo-theme-snail" title="hexo-theme-snail">hexo-theme-snail</a>
+                        
+                          <a class="tag" href="/tags/#snail" title="snail">snail</a>
+                        
+                          <a class="tag" href="/tags/#hexo" title="hexo">hexo</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                        <li><a href="https://xiaopf.github.io" target="_blank">xiaopf&#39;s Blog</a></li>
+                    
+                        <li><a href="https://github.com/xiaopf" target="_blank">xiaopf&#39;s Github</a></li>
+                    
+                        <li><a href="#" target="_blank">Other</a></li>
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<!-- star 模式通过时间控制 -->
+
+<style  type="text/css">
+    .notice {
+        color:rgba(51,51,51,0.9);
+        margin:0px;
+        padding:0px;
+    }
+
+    .visitor_notice a {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(51,51,51,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+
+    .stars .notice {
+        color:white;
+        margin:0px;
+        padding:0px;
+    }
+
+    .stars .visitor_notice a {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:normal;
+        font-style:italic;
+    }
+
+    .stars .visitor_notice a:hover {
+        text-decoration:none;
+        color:rgba(255,255,255,0.9);
+        font-weight:bolder;
+        font-style:italic;
+    }
+</style>
+
+<style  type="text/css">
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+
+        .comment_notes_blank {
+            height:100px;
+        }
+        
+        .comment_notes {
+            color:rgba(51,51,51,0.9);
+            text-align:left;
+            font-style:italic;
+        }
+
+        .visitor_notice {
+            border:1px solid rgba(209,216,220,0.9);
+            padding:20px 20px 20px 20px;
+            border-radius:10px;
+        }
+
+        .visitor_notice img{
+            height:40px;
+            width:40px;
+            float:left;
+            position:relative;
+            margin:0px 10px 0px 0px;
+            padding:0px;
+            top:0px;
+            left:0px;
+        }
+    }
+
+    .comment_notes_blank {
+        height:100px;
+    }
+    
+    .comment_notes {
+        color:rgba(51,51,51,0.9);
+        text-align:left;
+        font-style:italic;
+    }
+
+    .visitor_notice {
+        border:1px solid rgba(209,216,220,0.9);
+        padding:20px 20px 20px 20px;
+        border-radius:10px;
+    }
+
+    .visitor_notice img{
+        height:40px;
+        width:40px;
+        float:left;
+        position:relative;
+        margin:0px 10px 0px 0px;
+        padding:0px;
+        top:0px;
+        left:0px;
+    }
+
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+
+                
+                    <li>
+                        <a target="_blank"  href="https://github.com/xiaopf">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://twitter.com/perfect_shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.instagram.com/perfect__shaw">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa fa-instagram fa-stack-1x fa-inverse"></i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+                    <li>
+                        <a target="_blank" href="https://www.zhihu.com/people/pf-xiao">
+                            <span class="fa-stack fa-lg">
+                                <i class="fa fa-circle fa-stack-2x"></i>
+                                <i class="fa  fa-stack-1x fa-inverse">知</i>
+                            </span>
+                        </a>
+                    </li>
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; xiaopf 2020 
+                    <br>
+                    Powered by 
+                    <a href="https://github.com/dusign/hexo-theme-snail" target="_blank" rel="noopener">
+                        <i>hexo-theme-snail</i>
+                    </a> | 
+                    <iframe style="margin-left: 2px; margin-bottom:-5px;" frameborder="0" scrolling="0"
+                        width="100px" height="20px"
+                        src="https://ghbtns.com/github-btn.html?user=dusign&repo=hexo-theme-snail&type=star&count=true">
+                    </iframe>
+                </p>
+            </div>
+        </div>
+    </div>
+
+</footer>
+
+<!-- jQuery -->
+<script src="/js/jquery.min.js"></script>
+
+<!-- Bootstrap Core JavaScript -->
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom Theme JavaScript -->
+<script src="/js/hux-blog.min.js"></script>
+
+<!-- Search -->
+<script src="/js/search.js"></script>
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://xiaopf.github.io/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+<script>
+    // dynamic User by Hux
+    var _gaId = 'UA-154429678-1';
+    var _gaDomain = 'https://xiaopf.github.io/';
+
+    // Originial
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', _gaId, _gaDomain);
+    ga('send', 'pageview');
+</script>
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+<!-- Search -->
+
+    <script type="text/javascript">      
+        var search_path = "search.xml";
+        if (search_path.length == 0) {
+            search_path = "search.xml";
+        }
+    var path = "/" + search_path;
+    searchFunc(path, 'local-search-input', 'local-search-result');
+    </script>
+
+
+<!-- busuanzi -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+
+    
+        <!-- background effects start -->
+        
+
+        
+            <script type="text/javascript" src="/js/mouse-click.js" content='[&#34;🌱&#34;,&#34;just do it&#34;,&#34;🌾&#34;,&#34;🍀&#34;,&#34;don&#39;t give up&#34;,&#34;🍂&#34;,&#34;🌻&#34;,&#34;try it again&#34;,&#34;🍃&#34;,&#34;never say die&#34;,&#34;🌵&#34;,&#34;🌿&#34;,&#34;🌴&#34;]' color='[&#34;rgb(121,93,179)&#34; ,&#34;rgb(76,180,231)&#34; ,&#34;rgb(184,90,154)&#34; ,&#34;rgb(157,211,250)&#34; ,&#34;rgb(255,0,0)&#34; ,&#34;rgb(242,153,29)&#34; ,&#34;rgb(23,204,16)&#34; ,&#34;rgb(222,0,0)&#34; ,&#34;rgb(22,36,92)&#34; ,&#34;rgb(127,24,116)&#34; ,&#34;rgb(119,195,79)&#34; ,&#34;rgb(4,77,34)&#34; ,&#34;rgb(122,2,60)&#34;]'></script>
+        
+
+        <!-- background effects end -->
+    
+
+</body>
+
+</html>
